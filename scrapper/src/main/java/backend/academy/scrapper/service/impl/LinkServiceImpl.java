@@ -44,6 +44,6 @@ public class LinkServiceImpl implements LinkService {
     @Override
     public Link unfollow(String url, Integer id) {
         return Optional.ofNullable(linkRepository.removeLinkByUrlAndTelegramChatId(url, id))
-            .orElseThrow(() -> new NotFoundException("Ссылка не найдена"));
+                .orElseThrow(() -> new NotFoundException("Ссылка не найдена"));
     }
 }
