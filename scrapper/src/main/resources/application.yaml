@@ -1,5 +1,5 @@
 app:
-  github-token: ${GITHUB_TOKEN} # env variable
+  github-token: ${GITHUB_TOKEN}
   stackoverflow:
     key: ${SO_TOKEN_KEY}
     access-token: ${SO_ACCESS_TOKEN}
@@ -14,7 +14,7 @@ spring:
       ddl-auto: validate
     open-in-view: false
   config:
-    import: optional:file:D:\java-nifreebie\scrapper\.env[.properties]
+    import: optional:file:.env[.properties]
 
 server:
   port: 8081
