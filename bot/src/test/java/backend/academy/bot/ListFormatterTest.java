@@ -9,7 +9,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+@SpringBootTest(properties = {"app.telegram-token=token"})
 public class ListFormatterTest {
     @Test
     void testFormatLinks() {

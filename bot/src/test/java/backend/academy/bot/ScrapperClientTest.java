@@ -15,7 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-@SpringBootTest
+@SpringBootTest(properties = {"app.telegram-token=token"})
 public class ScrapperClientTest {
     private WireMockServer wireMockServer;
     private ScrapperClientImpl scrapperClient;

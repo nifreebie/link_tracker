@@ -7,7 +7,7 @@ import backend.academy.bot.util.Validator;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+@SpringBootTest(properties = {"app.telegram-token=token"})
 public class ValidatorTest {
     @Test
     void testValidGitHubUrls() {
