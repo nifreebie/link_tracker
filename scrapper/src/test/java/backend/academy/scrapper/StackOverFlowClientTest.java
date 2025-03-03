@@ -26,7 +26,7 @@ public class StackOverFlowClientTest {
     @BeforeEach
     void setUp() {
         wireMockServer =
-            new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort());
+                new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort());
         wireMockServer.start();
 
         WireMock.configureFor("localhost", wireMockServer.port());
@@ -42,33 +42,33 @@ public class StackOverFlowClientTest {
     @Test
     void testGetQuestionLastUpdatedWithBadRequest() {
         wireMockServer.stubFor(get(urlMatching("/questions/.*"))
-            .willReturn(aResponse().withStatus(400).withBody("Bad Request")));
+                .willReturn(aResponse().withStatus(400).withBody("Bad Request")));
 
         Mono<String> response = stackOverFlowClient.getQuestionLastUpdated("12345");
         StepVerifier.create(response)
-            .expectErrorMatches(throwable -> throwable.getMessage().contains("Bad request"))
-            .verify();
+                .expectErrorMatches(throwable -> throwable.getMessage().contains("Bad request"))
+                .verify();
     }
 
     @Test
     void testGetQuestionLastUpdatedWithNotFound() {
         wireMockServer.stubFor(get(urlMatching("/questions/.*"))
-            .willReturn(aResponse().withStatus(404).withBody("Not Found")));
+                .willReturn(aResponse().withStatus(404).withBody("Not Found")));
 
         Mono<String> response = stackOverFlowClient.getQuestionLastUpdated("12345");
         StepVerifier.create(response)
-            .expectErrorMatches(throwable -> throwable.getMessage().contains("Not found"))
-            .verify();
+                .expectErrorMatches(throwable -> throwable.getMessage().contains("Not found"))
+                .verify();
     }
 
     @Test
     void testGetQuestionLastUpdatedWithServerError() {
         wireMockServer.stubFor(get(urlMatching("/questions/.*"))
-            .willReturn(aResponse().withStatus(500).withBody("Internal Server Error")));
+                .willReturn(aResponse().withStatus(500).withBody("Internal Server Error")));
 
         Mono<String> response = stackOverFlowClient.getQuestionLastUpdated("12345");
         StepVerifier.create(response)
-            .expectErrorMatches(throwable -> throwable.getMessage().contains("Internal server error"))
-            .verify();
+                .expectErrorMatches(throwable -> throwable.getMessage().contains("Internal server error"))
+                .verify();
     }
 }

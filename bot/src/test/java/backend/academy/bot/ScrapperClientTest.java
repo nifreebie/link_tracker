@@ -23,7 +23,7 @@ public class ScrapperClientTest {
     @BeforeEach
     void setUp() {
         wireMockServer =
-            new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort());
+                new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort());
         wireMockServer.start();
 
         WireMock.configureFor("localhost", wireMockServer.port());
@@ -39,10 +39,10 @@ public class ScrapperClientTest {
     @Test
     void testRegisterWithConflict() {
         wireMockServer.stubFor(post(urlMatching("/tg-chat/.*"))
-            .willReturn(aResponse()
-                .withStatus(409)
-                .withHeader("Content-Type", "application/json")
-                .withBody("{\"exceptionMessage\":\"Конфликт\"}")));
+                .willReturn(aResponse()
+                        .withStatus(409)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{\"exceptionMessage\":\"Конфликт\"}")));
 
         Mono<String> response = scrapperClient.register(123L);
         StepVerifier.create(response).expectNext("Конфликт").verifyComplete();
@@ -51,11 +51,11 @@ public class ScrapperClientTest {
     @Test
     void testGetUserLinksSuccess() {
         wireMockServer.stubFor(get(urlEqualTo("/links"))
-            .withHeader("Tg-Chat-Id", equalTo("123"))
-            .willReturn(aResponse()
-                .withStatus(200)
-                .withHeader("Content-Type", "application/json")
-                .withBody("{\"links\": []}")));
+                .withHeader("Tg-Chat-Id", equalTo("123"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{\"links\": []}")));
 
         Mono<?> response = scrapperClient.getUserLinks(123L);
         StepVerifier.create(response).expectNextMatches(Objects::nonNull).verifyComplete();
@@ -64,11 +64,11 @@ public class ScrapperClientTest {
     @Test
     void testTrackWithConflict() {
         wireMockServer.stubFor(post(urlEqualTo("/links"))
-            .withHeader("Tg-Chat-Id", equalTo("123"))
-            .willReturn(aResponse()
-                .withStatus(409)
-                .withHeader("Content-Type", "application/json")
-                .withBody("{\"exceptionMessage\":\"Link already tracked\"}")));
+                .withHeader("Tg-Chat-Id", equalTo("123"))
+                .willReturn(aResponse()
+                        .withStatus(409)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{\"exceptionMessage\":\"Link already tracked\"}")));
 
         Mono<String> response = scrapperClient.track(123L, "http://example.com", List.of(), List.of());
         StepVerifier.create(response).expectNext("Link already tracked").verifyComplete();
@@ -77,11 +77,11 @@ public class ScrapperClientTest {
     @Test
     void testUntrackWithNotFound() {
         wireMockServer.stubFor(delete(urlEqualTo("/links"))
-            .withHeader("Tg-Chat-Id", equalTo("123"))
-            .willReturn(aResponse()
-                .withStatus(404)
-                .withHeader("Content-Type", "application/json")
-                .withBody("{\"exceptionMessage\":\"Link not found\"}")));
+                .withHeader("Tg-Chat-Id", equalTo("123"))
+                .willReturn(aResponse()
+                        .withStatus(404)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{\"exceptionMessage\":\"Link not found\"}")));
 
         Mono<String> response = scrapperClient.untrack(123L, "http://example.com");
         StepVerifier.create(response).expectNext("Link not found").verifyComplete();
