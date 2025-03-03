@@ -1,11 +1,12 @@
 package backend.academy.scrapper;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 
 import backend.academy.scrapper.client.impl.StackOverFlowClientImpl;
 import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,7 +16,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-@SpringBootTest
+@SpringBootTest(
+        properties = {"app.github-token=test", "app.stackoverflow.key=test", "app.stackoverflow.access-token=test"})
 public class StackOverFlowClientTest {
     private WireMockServer wireMockServer;
     private StackOverFlowClientImpl stackOverFlowClient;
@@ -29,7 +31,7 @@ public class StackOverFlowClientTest {
                 new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort());
         wireMockServer.start();
 
-        WireMock.configureFor("localhost", wireMockServer.port());
+        configureFor("localhost", wireMockServer.port());
 
         stackOverFlowClient = new StackOverFlowClientImpl("http://localhost:" + wireMockServer.port(), config);
     }

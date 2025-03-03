@@ -1,6 +1,9 @@
 package backend.academy.scrapper;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 
 import backend.academy.scrapper.client.impl.GithubClientImpl;
 import com.github.tomakehurst.wiremock.WireMockServer;
@@ -13,7 +16,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-@SpringBootTest
+@SpringBootTest(
+        properties = {"app.github-token=test", "app.stackoverflow.key=test", "app.stackoverflow.access-token=test"})
 public class GitHubClientTest {
     private static WireMockServer wireMockServer;
     private static GithubClientImpl gitHubClient;
