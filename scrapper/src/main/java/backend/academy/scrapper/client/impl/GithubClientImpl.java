@@ -1,9 +1,10 @@
 package backend.academy.scrapper.client.impl;
 
+import backend.academy.scrapper.ScrapperConfig;
 import backend.academy.scrapper.client.GithubClient;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -14,17 +15,18 @@ import reactor.core.publisher.Mono;
 public class GithubClientImpl implements GithubClient {
     private final WebClient webClient;
 
-    @Value("${app.github-token}")
-    private String token;
+    private final ScrapperConfig config;
 
     private static final String GITHUB_API_URL = "https://api.github.com";
 
-    public GithubClientImpl(String url) {
-        this.webClient = WebClient.builder().baseUrl(url).build();
+    @Autowired
+    public GithubClientImpl(ScrapperConfig config) {
+        this(GITHUB_API_URL, config);
     }
 
-    public GithubClientImpl() {
-        this.webClient = WebClient.builder().baseUrl(GITHUB_API_URL).build();
+    public GithubClientImpl(String url, ScrapperConfig config) {
+        this.config = config;
+        this.webClient = WebClient.builder().baseUrl(url).build();
     }
 
     @Override
@@ -33,7 +35,7 @@ public class GithubClientImpl implements GithubClient {
         return webClient
                 .get()
                 .uri("/repos/{owner}/{repo}", owner, repo)
-                .header("Authorization", "token " + token)
+                .header("Authorization", "token " + config.githubToken())
                 .header("Accept", "application/vnd.github.v3+json")
                 .retrieve()
                 .onStatus(HttpStatus.BAD_REQUEST::equals, response -> {

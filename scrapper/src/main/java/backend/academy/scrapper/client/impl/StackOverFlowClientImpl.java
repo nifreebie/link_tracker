@@ -1,10 +1,11 @@
 package backend.academy.scrapper.client.impl;
 
+import backend.academy.scrapper.ScrapperConfig;
 import backend.academy.scrapper.client.StackOverFlowClient;
 import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -15,20 +16,18 @@ import reactor.core.publisher.Mono;
 public class StackOverFlowClientImpl implements StackOverFlowClient {
     private final WebClient webClient;
 
-    @Value(value = "${app.stackoverflow.key}")
-    private String key;
-
-    @Value("${app.stackoverflow.access-token}")
-    private String accessToken;
+    private final ScrapperConfig config;
 
     private static final String STACKOVERFLOW_API_URL = "https://api.stackexchange.com/2.3";
 
-    public StackOverFlowClientImpl(String url) {
-        this.webClient = WebClient.builder().baseUrl(url).build();
+    @Autowired
+    public StackOverFlowClientImpl(ScrapperConfig config) {
+        this(STACKOVERFLOW_API_URL, config);
     }
 
-    public StackOverFlowClientImpl() {
-        this.webClient = WebClient.builder().baseUrl(STACKOVERFLOW_API_URL).build();
+    public StackOverFlowClientImpl(String url, ScrapperConfig config) {
+        this.config = config;
+        this.webClient = WebClient.builder().baseUrl(url).build();
     }
 
     @Override
@@ -41,8 +40,8 @@ public class StackOverFlowClientImpl implements StackOverFlowClient {
                         .queryParam("order", "desc")
                         .queryParam("sort", "activity")
                         .queryParam("site", "stackoverflow")
-                        .queryParam("key", key)
-                        .queryParam("access_token", accessToken)
+                        .queryParam("key", config.stackOverflow().key())
+                        .queryParam("access_token", config.stackOverflow().accessToken())
                         .build(id))
                 .retrieve()
                 .onStatus(HttpStatus.BAD_REQUEST::equals, response -> {
