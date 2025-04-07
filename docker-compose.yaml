@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: t-bank-sem2
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: nifreebie
+      POSTGRES_PASSWORD: nis150905
+      POSTGRES_DB: link_tracker_db
+    volumes:
+      - postgres:/var/lib/postgresql/data
+
+  liquibase:
+    image: liquibase/liquibase
+    container_name: liquibase_migrations
+    depends_on:
+      - postgres
+    volumes:
+      - ./migrations:/liquibase/migrations
+    command: [ "update", "--url=jdbc:postgresql://postgres:5432/link_tracker_db", "--username=nifreebie", "--password=nis150905", "--changeLogFile=migrations/master.xml" ]
+volumes:
+  postgres:

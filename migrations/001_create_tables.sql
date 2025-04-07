@@ -1,6 +1,0 @@
-CREATE TABLE Users
-(
-    id      SERIAL PRIMARY KEY,
-    chat_id BIGINT UNIQUE NOT NULL
-);
-
