@@ -3,9 +3,11 @@ package backend.academy.scrapper.repository;
 import java.util.List;
 
 public interface TelegramChatRepository {
-    void saveChat(Integer tgChatId);
+    void saveChat(Long tgChatId);
 
-    void removeChat(Integer tgChatId);
+    void removeChat(Long tgChatId);
 
-    List<Integer> getAll();
+    Integer countChatId(Long tgChatId);
+
+    List<Long> findAllUsers();
 }

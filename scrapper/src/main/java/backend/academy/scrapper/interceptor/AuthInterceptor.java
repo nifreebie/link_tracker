@@ -1,6 +1,6 @@
 package backend.academy.scrapper.interceptor;
 
-import backend.academy.scrapper.dto.response.ApiErrorResponse;
+import backend.academy.scrapper.model.dto.response.ApiErrorResponse;
 import backend.academy.scrapper.service.TelegramChatService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,7 +29,7 @@ public class AuthInterceptor implements HandlerInterceptor {
 
         if (chatIdHeader == null
                 || !isNumeric(chatIdHeader)
-                || !telegramChatService.isRegistered(Integer.parseInt(chatIdHeader))) {
+                || !telegramChatService.isRegistered(Long.parseLong(chatIdHeader))) {
             ApiErrorResponse errorResponse = new ApiErrorResponse(
                     "Доступ запрещен",
                     "403",
@@ -37,7 +37,7 @@ public class AuthInterceptor implements HandlerInterceptor {
                     "Пользователь не зарегистрирован",
                     Collections.emptyList());
 
-            response.setStatus(HttpStatus.FORBIDDEN.value());
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
             response.getWriter().write(new ObjectMapper().writeValueAsString(errorResponse));

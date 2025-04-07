@@ -1,7 +1,8 @@
 package backend.academy.scrapper.service.impl;
 
 import backend.academy.scrapper.client.GithubClient;
-import backend.academy.scrapper.service.TrackerService;
+import backend.academy.scrapper.model.dto.EventDTO;
+import backend.academy.scrapper.service.GithubTrackerService;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +10,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 @Service
-public class GitHubTrackerService implements TrackerService {
+public class GitHubTrackerService implements GithubTrackerService {
     private final GithubClient githubClient;
 
     @Autowired
@@ -18,11 +19,19 @@ public class GitHubTrackerService implements TrackerService {
     }
 
     @Override
-    public Mono<String> track(String url) {
+    public Mono<EventDTO> trackCommit(String url) {
         String[] credentials = extractOwnerAndRepo(url);
         String owner = credentials[0];
         String repo = credentials[1];
         return githubClient.getRepoLastUpdated(owner, repo);
+    }
+
+    @Override
+    public Mono<EventDTO> trackEvent(String url) {
+        String[] credentials = extractOwnerAndRepo(url);
+        String owner = credentials[0];
+        String repo = credentials[1];
+        return githubClient.getLastIssueCreated(owner, repo);
     }
 
     private String[] extractOwnerAndRepo(String githubUrl) {

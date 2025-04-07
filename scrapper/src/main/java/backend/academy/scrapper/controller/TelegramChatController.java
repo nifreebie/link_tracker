@@ -1,15 +1,17 @@
 package backend.academy.scrapper.controller;
 
-import backend.academy.scrapper.dto.response.ApiErrorResponse;
 import backend.academy.scrapper.exceptions.IsAlreadyRegisteredException;
 import backend.academy.scrapper.exceptions.NotFoundException;
+import backend.academy.scrapper.model.dto.response.ApiErrorResponse;
 import backend.academy.scrapper.service.TelegramChatService;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,7 +29,7 @@ public class TelegramChatController {
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<?> register(@PathVariable Integer id) {
+    public ResponseEntity<?> register(@PathVariable Long id) {
         try {
             telegramChatService.register(id);
             return ResponseEntity.ok("Чат зарегистрирован");
@@ -45,7 +47,7 @@ public class TelegramChatController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> unregister(@PathVariable Integer id) {
+    public ResponseEntity<?> unregister(@PathVariable Long id) {
         try {
             telegramChatService.delete(id);
             return ResponseEntity.ok("Чат успешно удалён");
@@ -60,5 +62,10 @@ public class TelegramChatController {
                                     .map(StackTraceElement::toString)
                                     .collect(Collectors.toList())));
         }
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Long>> getAllUsers() {
+        return ResponseEntity.ok(telegramChatService.getAllUsers());
     }
 }

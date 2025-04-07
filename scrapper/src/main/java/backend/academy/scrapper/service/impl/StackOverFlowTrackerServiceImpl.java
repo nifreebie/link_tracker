@@ -1,7 +1,8 @@
 package backend.academy.scrapper.service.impl;
 
 import backend.academy.scrapper.client.StackOverFlowClient;
-import backend.academy.scrapper.service.TrackerService;
+import backend.academy.scrapper.model.dto.EventDTO;
+import backend.academy.scrapper.service.StackOverFlowTrackerService;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,18 +10,24 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 @Service
-public class StackOverFlowTrackerService implements TrackerService {
+public class StackOverFlowTrackerServiceImpl implements StackOverFlowTrackerService {
     private final StackOverFlowClient stackOverFlowClient;
 
     @Autowired
-    public StackOverFlowTrackerService(StackOverFlowClient stackOverFlowClient) {
+    public StackOverFlowTrackerServiceImpl(StackOverFlowClient stackOverFlowClient) {
         this.stackOverFlowClient = stackOverFlowClient;
     }
 
     @Override
-    public Mono<String> track(String url) {
+    public Mono<EventDTO> trackAnswers(String url) {
         String id = extractQuestionId(url);
-        return stackOverFlowClient.getQuestionLastUpdated(id);
+        return stackOverFlowClient.getQuestionLastAnswer(id);
+    }
+
+    @Override
+    public Mono<EventDTO> trackComments(String url) {
+        String id = extractQuestionId(url);
+        return stackOverFlowClient.getQuestionLastComment(id);
     }
 
     private String extractQuestionId(String url) {

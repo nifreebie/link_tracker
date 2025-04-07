@@ -1,11 +1,13 @@
 package backend.academy.scrapper.service.impl;
 
-import backend.academy.scrapper.dto.request.AddLinkRequest;
 import backend.academy.scrapper.exceptions.IsAlreadyRegisteredException;
 import backend.academy.scrapper.exceptions.NotFoundException;
-import backend.academy.scrapper.model.Link;
+import backend.academy.scrapper.model.dto.LinkDTO;
+import backend.academy.scrapper.model.dto.request.AddLinkRequest;
 import backend.academy.scrapper.repository.LinkRepository;
+import backend.academy.scrapper.repository.TagRepository;
 import backend.academy.scrapper.service.LinkService;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,36 +16,92 @@ import org.springframework.stereotype.Service;
 @Service
 public class LinkServiceImpl implements LinkService {
     private final LinkRepository linkRepository;
+    private final TagRepository tagRepository;
 
     @Autowired
-    public LinkServiceImpl(LinkRepository linkRepository) {
+    public LinkServiceImpl(LinkRepository linkRepository, TagRepository tagRepository) {
         this.linkRepository = linkRepository;
+        this.tagRepository = tagRepository;
     }
 
     @Override
-    public Link follow(AddLinkRequest request, Integer telegramChatId) {
+    public LinkDTO follow(AddLinkRequest request, Long telegramChatId) {
         if (linkRepository.isUrlExists(request.link())) {
-            if (linkRepository.findLinkByUrl(request.link()).telegramChatIds().contains(telegramChatId)) {
+            if (linkRepository.findLinkByUrl(request.link()).telegramChatIds().contains(telegramChatId))
                 throw new IsAlreadyRegisteredException("Ссылка уже отслеживается");
-            } else {
-                linkRepository.findLinkByUrl(request.link()).telegramChatIds().add(telegramChatId);
-                return linkRepository.findLinkByUrl(request.link());
-            }
-        } else {
-            Link link = new Link(request.link(), request.tags(), request.filters(), telegramChatId);
-            linkRepository.saveLink(link);
-            return link;
         }
+        return linkRepository.saveLink(request.link(), request.tags(), request.filters(), telegramChatId);
     }
 
     @Override
-    public List<Link> getUserLinks(Integer id) {
-        return linkRepository.findUserLinks(id);
+    public List<LinkDTO> getUserLinks(Long id) {
+        List<LinkDTO> links = linkRepository.findUserLinks(id);
+        if (links == null) return List.of();
+
+        List<String> tags = tagRepository.getUserTags(id);
+
+        return links.stream()
+                .map(link -> {
+                    List<String> mutableTags = new ArrayList<>(link.tags());
+                    if (tags == null) {
+                        mutableTags.clear();
+                    } else {
+                        mutableTags.removeIf(tag -> !tags.contains(tag));
+                    }
+                    return new LinkDTO(
+                            link.id(),
+                            link.url(),
+                            mutableTags,
+                            link.filters(),
+                            link.lastUpdatedAt(),
+                            link.telegramChatIds(),
+                            link.linkType());
+                })
+                .toList();
     }
 
     @Override
-    public Link unfollow(String url, Integer id) {
+    public LinkDTO unfollow(String url, Long id) {
         return Optional.ofNullable(linkRepository.removeLinkByUrlAndTelegramChatId(url, id))
                 .orElseThrow(() -> new NotFoundException("Ссылка не найдена"));
+    }
+
+    @Override
+    public void addLinkTag(String tagName, String url, Long telegramChatId) {
+        if (!linkRepository.isUrlExists(url)) throw new NotFoundException("Такой ссылки не существует");
+        if (!tagRepository.isTagExists(tagName)) throw new NotFoundException("Такого тэга не существует");
+
+        LinkDTO link = linkRepository.findLinkByUrl(url);
+
+        if (!linkRepository.findUserLinks(telegramChatId).contains(link))
+            throw new NotFoundException("Вы не отслеживаете такую ссылку");
+
+        List<String> tags = tagRepository.getUserTags(telegramChatId);
+
+        List<String> mutableTags = new ArrayList<>(link.tags());
+
+        mutableTags.removeIf(tag -> !tags.contains(tag));
+
+        if (mutableTags.contains(tagName))
+            throw new IsAlreadyRegisteredException("Тэг " + tagName + " уже принадлежит этой ссылке");
+
+        tagRepository.addLinkTag(tagName, url, telegramChatId);
+    }
+
+    @Override
+    public void removeLinkTag(String tagName, String url, Long telegramChatId) {
+        if (!linkRepository.isUrlExists(url)) throw new NotFoundException("Такой ссылки не существует");
+        if (!tagRepository.isTagExists(tagName)) throw new NotFoundException("Такого тэга не существует");
+        LinkDTO link = linkRepository.findLinkByUrl(url);
+        if (!linkRepository.findUserLinks(telegramChatId).contains(link))
+            throw new NotFoundException("Вы не отслеживаете такую ссылку");
+        List<String> tags = tagRepository.getUserTags(telegramChatId);
+
+        List<String> mutableTags = new ArrayList<>(link.tags());
+
+        mutableTags.removeIf(tag -> !tags.contains(tag));
+        if (!mutableTags.contains(tagName))
+            throw new NotFoundException("Тэг " + tagName + " не принадлежит этой ссылке");
+        tagRepository.removeLinkTag(tagName, url, telegramChatId);
     }
 }

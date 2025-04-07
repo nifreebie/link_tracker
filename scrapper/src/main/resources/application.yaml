@@ -3,6 +3,8 @@ app:
   stackoverflow:
     key: ${SO_TOKEN_KEY}
     access-token: ${SO_ACCESS_TOKEN}
+  access-type: SQL
+  batch-size: 100
 
 spring:
   application:
@@ -13,6 +15,10 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+  datasource:
+    url: jdbc:postgresql://localhost:5432/link_tracker_db
+    username: nifreebie
+    password: nis150905
   config:
     import: optional:file:.env[.properties]
 

@@ -3,11 +3,11 @@ package backend.academy.scrapper.service;
 import java.util.List;
 
 public interface TelegramChatService {
-    void register(Integer id);
+    void register(Long id);
 
-    void delete(Integer id);
+    void delete(Long id);
 
-    List<Integer> getChats();
+    boolean isRegistered(Long id);
 
-    boolean isRegistered(Integer id);
+    List<Long> getAllUsers();
 }

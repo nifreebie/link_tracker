@@ -19,24 +19,27 @@ public class TelegramChatServiceImpl implements TelegramChatService {
     }
 
     @Override
-    public void register(Integer id) {
+    public void register(Long id) {
         if (isRegistered(id)) throw new IsAlreadyRegisteredException("Такой чат уже зарегистрирован");
         telegramChatRepository.saveChat(id);
     }
 
     @Override
-    public void delete(Integer id) {
+    public void delete(Long id) {
         if (!isRegistered(id)) throw new NotFoundException("Такого чата не существует");
         telegramChatRepository.removeChat(id);
     }
 
     @Override
-    public List<Integer> getChats() {
-        return telegramChatRepository.getAll();
+    public boolean isRegistered(Long id) {
+        System.out.println(telegramChatRepository.countChatId(id));
+        return telegramChatRepository.countChatId(id) > 0;
     }
 
     @Override
-    public boolean isRegistered(Integer id) {
-        return getChats().contains(id);
+    public List<Long> getAllUsers() {
+        List<Long> users = telegramChatRepository.findAllUsers();
+        if (users == null) return List.of();
+        return users;
     }
 }

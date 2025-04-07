@@ -1,13 +1,17 @@
 package backend.academy.scrapper.service;
 
-import backend.academy.scrapper.dto.request.AddLinkRequest;
-import backend.academy.scrapper.model.Link;
+import backend.academy.scrapper.model.dto.LinkDTO;
+import backend.academy.scrapper.model.dto.request.AddLinkRequest;
 import java.util.List;
 
 public interface LinkService {
-    Link follow(AddLinkRequest request, Integer telegramChatId);
+    LinkDTO follow(AddLinkRequest request, Long chatId);
 
-    List<Link> getUserLinks(Integer id);
+    List<LinkDTO> getUserLinks(Long chatId);
 
-    Link unfollow(String url, Integer id);
+    LinkDTO unfollow(String url, Long chatId);
+
+    void addLinkTag(String tagName, String url, Long chatId);
+
+    void removeLinkTag(String tagName, String url, Long chatId);
 }

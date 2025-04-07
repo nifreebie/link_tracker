@@ -1,7 +1,8 @@
 package backend.academy.scrapper.client;
 
-import backend.academy.scrapper.model.Link;
+import backend.academy.scrapper.model.dto.EventDTO;
+import backend.academy.scrapper.model.dto.LinkDTO;
 
 public interface BotClient {
-    void update(Link link);
+    void update(LinkDTO link, EventDTO eventDTO);
 }

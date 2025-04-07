@@ -1,18 +1,23 @@
 package backend.academy.scrapper.repository;
 
-import backend.academy.scrapper.model.Link;
+import backend.academy.scrapper.model.dto.LinkDTO;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface LinkRepository {
-    List<Link> findUserLinks(Integer telegramChatId);
+    List<LinkDTO> findUserLinks(Long telegramChatId);
 
-    void saveLink(Link link);
+    LinkDTO saveLink(String url, List<String> tags, List<String> filters, Long telegramChatId);
 
-    List<Link> getAll();
+    List<LinkDTO> getAll();
 
     boolean isUrlExists(String url);
 
-    Link removeLinkByUrlAndTelegramChatId(String url, Integer telegramChatId);
+    LinkDTO removeLinkByUrlAndTelegramChatId(String url, Long telegramChatId);
 
-    Link findLinkByUrl(String url);
+    LinkDTO findLinkByUrl(String url);
+
+    void updateLastUpdatedAt(Integer id, LocalDateTime lastUpdatedAt);
+
+    List<LinkDTO> getPaginatedLinks(Integer offset, Integer limit);
 }

@@ -1,8 +1,9 @@
 package backend.academy.scrapper.client.impl;
 
 import backend.academy.scrapper.client.BotClient;
-import backend.academy.scrapper.dto.request.LinkUpdateRequest;
-import backend.academy.scrapper.model.Link;
+import backend.academy.scrapper.model.dto.EventDTO;
+import backend.academy.scrapper.model.dto.LinkDTO;
+import backend.academy.scrapper.model.dto.request.LinkUpdateRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -24,9 +25,17 @@ public class BotClientImpl implements BotClient {
     }
 
     @Override
-    public void update(Link link) {
+    public void update(LinkDTO link, EventDTO eventDTO) {
         log.info("Updating link: {} for chat IDs: {}", link.url(), link.telegramChatIds());
-        LinkUpdateRequest request = new LinkUpdateRequest(link.id(), link.url(), "", link.telegramChatIds());
+        LinkUpdateRequest request = new LinkUpdateRequest(
+                link.id(),
+                link.url(),
+                eventDTO.description(),
+                link.telegramChatIds(),
+                eventDTO.title(),
+                eventDTO.username(),
+                eventDTO.date(),
+                eventDTO.eventType());
         webClient
                 .post()
                 .uri("/updates")

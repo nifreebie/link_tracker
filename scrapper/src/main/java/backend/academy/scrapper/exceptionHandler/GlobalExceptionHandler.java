@@ -1,6 +1,6 @@
 package backend.academy.scrapper.exceptionHandler;
 
-import backend.academy.scrapper.dto.response.ApiErrorResponse;
+import backend.academy.scrapper.model.dto.response.ApiErrorResponse;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.springframework.http.HttpStatus;
