@@ -1,7 +1,7 @@
 package backend.academy.bot.util;
 
-import backend.academy.bot.dto.response.LinkResponse;
-import backend.academy.bot.dto.response.ListLinksResponse;
+import backend.academy.bot.model.dto.response.LinkResponse;
+import backend.academy.bot.model.dto.response.ListLinksResponse;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass

@@ -41,24 +41,33 @@ public class UpdatesListenerRegister {
     public void register() {
         telegramBot.setUpdatesListener(updates -> {
             updates.forEach(update -> {
-                if (update.message() != null && update.message().text() != null) {
-                    if (update.message().text().startsWith("/")) {
-                        long chatId = update.message().chat().id();
-                        String text = update.message().text();
-                        try {
-                            Command command = commandParser.getCommand(text, update);
+                Long chatId = null;
+                if (update.message() != null) {
+                    chatId = update.message().chat().id();
+                    if (update.message().text() != null) {
+                        if (update.message().text().startsWith("/")) {
+                            String text = update.message().text();
+                            try {
+                                Command command = commandParser.getCommand(text, update);
+                                if (command != null) {
+                                    telegramBot.execute(
+                                            new SendMessage(chatId, commandManager.executeCommand(command)));
+                                }
+                            } catch (NoSuchCommandException | UnregisteredException | UnavaliableCommandException e) {
+                                telegramBot.execute(new SendMessage(chatId, e.getMessage()));
+                            }
+                        } else {
+                            Command command = stateMachine.process(chatId, update);
                             if (command != null) {
                                 telegramBot.execute(new SendMessage(chatId, commandManager.executeCommand(command)));
                             }
-                        } catch (NoSuchCommandException | UnregisteredException | UnavaliableCommandException e) {
-                            telegramBot.execute(new SendMessage(chatId, e.getMessage()));
                         }
-                    } else {
-                        long chatId = update.message().chat().id();
-                        Command command = stateMachine.process(chatId, update);
-                        if (command != null) {
-                            telegramBot.execute(new SendMessage(chatId, commandManager.executeCommand(command)));
-                        }
+                    }
+                } else if (update.callbackQuery() != null) {
+                    chatId = update.callbackQuery().message().chat().id();
+                    Command command = stateMachine.process(chatId, update);
+                    if (command != null) {
+                        telegramBot.execute(new SendMessage(chatId, commandManager.executeCommand(command)));
                     }
                 }
             });

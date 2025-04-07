@@ -1,6 +1,6 @@
 package backend.academy.bot.exceptionHandler;
 
-import backend.academy.bot.dto.response.ApiErrorResponse;
+import backend.academy.bot.model.dto.response.ApiErrorResponse;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.springframework.http.HttpStatus;

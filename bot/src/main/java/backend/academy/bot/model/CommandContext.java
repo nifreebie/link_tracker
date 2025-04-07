@@ -10,4 +10,5 @@ public class CommandContext {
     private String url;
     private List<String> tags;
     private List<String> filters;
+    private List<String> links;
 }

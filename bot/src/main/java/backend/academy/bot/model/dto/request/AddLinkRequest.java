@@ -1,4 +1,4 @@
-package backend.academy.bot.dto.request;
+package backend.academy.bot.model.dto.request;
 
 import java.util.List;
 

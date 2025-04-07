@@ -4,9 +4,12 @@ import backend.academy.bot.exceptions.NoSuchCommandException;
 import backend.academy.bot.model.command.Command;
 import backend.academy.bot.service.CommandParser;
 import backend.academy.bot.service.commandBuilder.CommandBuilder;
+import backend.academy.bot.service.commandBuilder.impl.AddTagsToLinkCommandBuilder;
 import backend.academy.bot.service.commandBuilder.impl.CancelCommandBuilder;
+import backend.academy.bot.service.commandBuilder.impl.CreateTagCommandBuilder;
 import backend.academy.bot.service.commandBuilder.impl.HelpCommandBuilder;
 import backend.academy.bot.service.commandBuilder.impl.ListCommandBuilder;
+import backend.academy.bot.service.commandBuilder.impl.RemoveTagsFromLinkCommandBuilder;
 import backend.academy.bot.service.commandBuilder.impl.StartCommandBuilder;
 import backend.academy.bot.service.commandBuilder.impl.TrackCommandBuilder;
 import backend.academy.bot.service.commandBuilder.impl.UntrackCommandBuilder;
@@ -27,6 +30,9 @@ public class CommandParserImpl implements CommandParser {
     private final TrackCommandBuilder trackCommandBuilder;
     private final UntrackCommandBuilder untrackCommandBuilder;
     private final CancelCommandBuilder cancelCommandBuilder;
+    private final CreateTagCommandBuilder createTagCommandBuilder;
+    private final AddTagsToLinkCommandBuilder addTagsToLinkCommandBuilder;
+    private final RemoveTagsFromLinkCommandBuilder removeTagsFromLinkCommandBuilder;
 
     @Autowired
     public CommandParserImpl(
@@ -35,13 +41,19 @@ public class CommandParserImpl implements CommandParser {
             StartCommandBuilder startCommandBuilder,
             TrackCommandBuilder trackCommandBuilder,
             UntrackCommandBuilder untrackCommandBuilder,
-            CancelCommandBuilder cancelCommandBuilder) {
+            CancelCommandBuilder cancelCommandBuilder,
+            CreateTagCommandBuilder createTagCommandBuilder,
+            AddTagsToLinkCommandBuilder addTagsToLinkCommandBuilder,
+            RemoveTagsFromLinkCommandBuilder removeTagsFromLinkCommandBuilder) {
         this.helpCommandBuilder = helpCommandBuilder;
         this.listCommandBuilder = listCommandBuilder;
         this.startCommandBuilder = startCommandBuilder;
         this.trackCommandBuilder = trackCommandBuilder;
         this.untrackCommandBuilder = untrackCommandBuilder;
         this.cancelCommandBuilder = cancelCommandBuilder;
+        this.createTagCommandBuilder = createTagCommandBuilder;
+        this.addTagsToLinkCommandBuilder = addTagsToLinkCommandBuilder;
+        this.removeTagsFromLinkCommandBuilder = removeTagsFromLinkCommandBuilder;
     }
 
     @PostConstruct
@@ -53,6 +65,9 @@ public class CommandParserImpl implements CommandParser {
         commandBuilders.put("/track", trackCommandBuilder);
         commandBuilders.put("/untrack", untrackCommandBuilder);
         commandBuilders.put("/cancel", cancelCommandBuilder);
+        commandBuilders.put("/create_tag", createTagCommandBuilder);
+        commandBuilders.put("/add_tags_to_link", addTagsToLinkCommandBuilder);
+        commandBuilders.put("/remove_tags_from_link", removeTagsFromLinkCommandBuilder);
     }
 
     @Override
