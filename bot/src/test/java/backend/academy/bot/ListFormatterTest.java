@@ -2,8 +2,8 @@ package backend.academy.bot;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import backend.academy.bot.dto.response.LinkResponse;
-import backend.academy.bot.dto.response.ListLinksResponse;
+import backend.academy.bot.model.dto.response.LinkResponse;
+import backend.academy.bot.model.dto.response.ListLinksResponse;
 import backend.academy.bot.util.LinkFormatter;
 import java.util.List;
 import org.junit.jupiter.api.Test;
