@@ -9,8 +9,8 @@ import backend.academy.scrapper.model.dto.request.RemoveLinkRequest;
 import backend.academy.scrapper.model.dto.response.ApiErrorResponse;
 import backend.academy.scrapper.model.dto.response.LinkResponse;
 import backend.academy.scrapper.model.dto.response.ListLinksResponse;
+import backend.academy.scrapper.openapi.src.main.java.com.baeldung.openapi.api.LinksApi;
 import backend.academy.scrapper.service.LinkService;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/links")
-public class LinkController {
+public class LinkController implements LinksApi {
     private final LinkService linkService;
 
     @Autowired
@@ -35,15 +35,16 @@ public class LinkController {
         this.linkService = linkService;
     }
 
+    @Override
     @GetMapping
-    public ResponseEntity<?> getUserLinks(@RequestHeader("Tg-Chat-Id") Long telegramChatId) {
-        List<LinkResponse> response = new ArrayList<>();
-        linkService.getUserLinks(telegramChatId).forEach(link -> response.add(link.toResponse()));
+    public ResponseEntity<?> linksGet(@RequestHeader("Tg-Chat-Id") Long telegramChatId) {
+        List<LinkResponse> response = linkService.getUserLinks(telegramChatId);
         return ResponseEntity.ok(new ListLinksResponse(response, response.size()));
     }
 
     @PostMapping
-    public ResponseEntity<?> track(
+    @Override
+    public ResponseEntity<?> linksPost(
             @RequestHeader("Tg-Chat-Id") Long telegramChatId, @RequestBody AddLinkRequest request) {
         try {
             LinkDTO link = linkService.follow(request, telegramChatId);
@@ -61,8 +62,9 @@ public class LinkController {
         }
     }
 
+    @Override
     @DeleteMapping
-    public ResponseEntity<?> untrack(
+    public ResponseEntity<?> linksDelete(
             @RequestHeader("Tg-Chat-Id") Long telegramChatId, @RequestBody RemoveLinkRequest request) {
         try {
             LinkDTO removedLink = linkService.unfollow(request.link(), telegramChatId);
@@ -84,7 +86,7 @@ public class LinkController {
     public ResponseEntity<?> addTags(
             @RequestHeader("Tg-Chat-Id") Long telegramChatId, @RequestBody ChangeLinkTagsRequest request) {
         try {
-            request.tags().forEach(tag -> linkService.addLinkTag(tag, request.url(), telegramChatId));
+            linkService.addLinkTags(request.tags(), request.url(), telegramChatId);
             return ResponseEntity.ok("Тэги успешно добавлены");
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -113,7 +115,7 @@ public class LinkController {
     public ResponseEntity<?> removeTags(
             @RequestHeader("Tg-Chat-Id") Long telegramChatId, @RequestBody ChangeLinkTagsRequest request) {
         try {
-            request.tags().forEach(tag -> linkService.removeLinkTag(tag, request.url(), telegramChatId));
+            linkService.removeLinkTags(request.tags(), request.url(), telegramChatId);
             return ResponseEntity.ok("Тэги успешно удалены");
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)

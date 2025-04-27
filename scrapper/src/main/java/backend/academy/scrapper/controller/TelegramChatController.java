@@ -3,6 +3,7 @@ package backend.academy.scrapper.controller;
 import backend.academy.scrapper.exceptions.IsAlreadyRegisteredException;
 import backend.academy.scrapper.exceptions.NotFoundException;
 import backend.academy.scrapper.model.dto.response.ApiErrorResponse;
+import backend.academy.scrapper.openapi.src.main.java.com.baeldung.openapi.api.TgChatApi;
 import backend.academy.scrapper.service.TelegramChatService;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/tg-chat")
-public class TelegramChatController {
+public class TelegramChatController implements TgChatApi {
 
     private final TelegramChatService telegramChatService;
 
@@ -28,8 +29,9 @@ public class TelegramChatController {
         this.telegramChatService = telegramChatService;
     }
 
+    @Override
     @PostMapping("/{id}")
-    public ResponseEntity<?> register(@PathVariable Long id) {
+    public ResponseEntity<?> tgChatIdPost(@PathVariable Long id) {
         try {
             telegramChatService.register(id);
             return ResponseEntity.ok("Чат зарегистрирован");
@@ -46,8 +48,9 @@ public class TelegramChatController {
         }
     }
 
+    @Override
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> unregister(@PathVariable Long id) {
+    public ResponseEntity<?> tgChatIdDelete(@PathVariable Long id) {
         try {
             telegramChatService.delete(id);
             return ResponseEntity.ok("Чат успешно удалён");

@@ -4,6 +4,7 @@ import backend.academy.scrapper.exceptions.IsAlreadyRegisteredException;
 import backend.academy.scrapper.exceptions.NotFoundException;
 import backend.academy.scrapper.model.dto.LinkDTO;
 import backend.academy.scrapper.model.dto.request.AddLinkRequest;
+import backend.academy.scrapper.model.dto.response.LinkResponse;
 import backend.academy.scrapper.repository.LinkRepository;
 import backend.academy.scrapper.repository.TagRepository;
 import backend.academy.scrapper.service.LinkService;
@@ -34,7 +35,7 @@ public class LinkServiceImpl implements LinkService {
     }
 
     @Override
-    public List<LinkDTO> getUserLinks(Long id) {
+    public List<LinkResponse> getUserLinks(Long id) {
         List<LinkDTO> links = linkRepository.findUserLinks(id);
         if (links == null) return List.of();
 
@@ -48,14 +49,7 @@ public class LinkServiceImpl implements LinkService {
                     } else {
                         mutableTags.removeIf(tag -> !tags.contains(tag));
                     }
-                    return new LinkDTO(
-                            link.id(),
-                            link.url(),
-                            mutableTags,
-                            link.filters(),
-                            link.lastUpdatedAt(),
-                            link.telegramChatIds(),
-                            link.linkType());
+                    return new LinkResponse(link.id(), link.url(), mutableTags, link.filters());
                 })
                 .toList();
     }
@@ -67,7 +61,16 @@ public class LinkServiceImpl implements LinkService {
     }
 
     @Override
-    public void addLinkTag(String tagName, String url, Long telegramChatId) {
+    public void addLinkTags(List<String> tagNames, String url, Long chatId) {
+        tagNames.forEach(link -> addLinkTag(link, url, chatId));
+    }
+
+    @Override
+    public void removeLinkTags(List<String> tagNames, String url, Long chatId) {
+        tagNames.forEach(link -> removeLinkTag(link, url, chatId));
+    }
+
+    private void addLinkTag(String tagName, String url, Long telegramChatId) {
         if (!linkRepository.isUrlExists(url)) throw new NotFoundException("Такой ссылки не существует");
         if (!tagRepository.isTagExists(tagName)) throw new NotFoundException("Такого тэга не существует");
 
@@ -88,8 +91,7 @@ public class LinkServiceImpl implements LinkService {
         tagRepository.addLinkTag(tagName, url, telegramChatId);
     }
 
-    @Override
-    public void removeLinkTag(String tagName, String url, Long telegramChatId) {
+    private void removeLinkTag(String tagName, String url, Long telegramChatId) {
         if (!linkRepository.isUrlExists(url)) throw new NotFoundException("Такой ссылки не существует");
         if (!tagRepository.isTagExists(tagName)) throw new NotFoundException("Такого тэга не существует");
         LinkDTO link = linkRepository.findLinkByUrl(url);
