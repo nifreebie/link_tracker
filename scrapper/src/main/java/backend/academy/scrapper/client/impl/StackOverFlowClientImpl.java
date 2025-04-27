@@ -36,6 +36,7 @@ public class StackOverFlowClientImpl implements StackOverFlowClient {
     }
 
     @Override
+    // CPD-OFF
     public Mono<EventDTO> getQuestionLastAnswer(String id) {
         log.info("Fetching last answer for question ID: {}", id);
 
@@ -54,8 +55,7 @@ public class StackOverFlowClientImpl implements StackOverFlowClient {
                 .bodyToMono(Map.class)
                 .publishOn(Schedulers.boundedElastic())
                 .mapNotNull(map -> {
-                    EventDTO eventDTO =
-                            (EventDTO) extractEvent(map, EventType.ANSWER).block();
+                    EventDTO eventDTO = mapToEventDTO(map, EventType.ANSWER);
                     log.info("Extracted last answer event: {}", eventDTO);
                     return eventDTO;
                 })
@@ -83,8 +83,7 @@ public class StackOverFlowClientImpl implements StackOverFlowClient {
                 .bodyToMono(Map.class)
                 .publishOn(Schedulers.boundedElastic())
                 .mapNotNull(map -> {
-                    EventDTO eventDTO =
-                            (EventDTO) extractEvent(map, EventType.COMMENT).block();
+                    EventDTO eventDTO = mapToEventDTO(map, EventType.COMMENT);
                     log.info("Extracted last comment event: {}", eventDTO);
                     return eventDTO;
                 })
@@ -113,5 +112,9 @@ public class StackOverFlowClientImpl implements StackOverFlowClient {
         String preview = body.length() > 200 ? body.substring(0, 200) : body;
 
         return Mono.just(new EventDTO(title, username, dateTime, preview, eventType));
+    }
+
+    private EventDTO mapToEventDTO(Map<String, Object> map, EventType eventType) {
+        return (EventDTO) extractEvent(map, eventType).block();
     }
 }

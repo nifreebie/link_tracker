@@ -78,14 +78,6 @@ public class AddLinkRequest {
         return this;
     }
 
-    public AddLinkRequest addFiltersItem(String filtersItem) {
-        if (this.filters == null) {
-            this.filters = new ArrayList<>();
-        }
-        this.filters.add(filtersItem);
-        return this;
-    }
-
     /**
      * Get filters
      *

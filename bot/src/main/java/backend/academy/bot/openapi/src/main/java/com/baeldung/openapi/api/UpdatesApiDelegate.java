@@ -2,7 +2,6 @@ package backend.academy.bot.openapi.src.main.java.com.baeldung.openapi.api;
 
 import backend.academy.bot.model.dto.request.LinkUpdateRequest;
 import jakarta.annotation.Generated;
-import jakarta.validation.constraints.*;
 import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;

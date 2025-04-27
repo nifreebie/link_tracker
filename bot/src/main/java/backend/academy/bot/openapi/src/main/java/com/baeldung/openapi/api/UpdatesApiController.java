@@ -1,7 +1,6 @@
 package backend.academy.bot.openapi.src.main.java.com.baeldung.openapi.api;
 
 import jakarta.annotation.Generated;
-import jakarta.validation.constraints.*;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

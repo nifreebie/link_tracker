@@ -27,9 +27,12 @@ public class LinkServiceImpl implements LinkService {
 
     @Override
     public LinkDTO follow(AddLinkRequest request, Long telegramChatId) {
-        if (linkRepository.isUrlExists(request.link())) {
-            if (linkRepository.findLinkByUrl(request.link()).telegramChatIds().contains(telegramChatId))
-                throw new IsAlreadyRegisteredException("Ссылка уже отслеживается");
+        if (linkRepository.isUrlExists(request.link())
+                && linkRepository
+                        .findLinkByUrl(request.link())
+                        .telegramChatIds()
+                        .contains(telegramChatId)) {
+            throw new IsAlreadyRegisteredException("Ссылка уже отслеживается");
         }
         return linkRepository.saveLink(request.link(), request.tags(), request.filters(), telegramChatId);
     }
@@ -71,13 +74,7 @@ public class LinkServiceImpl implements LinkService {
     }
 
     private void addLinkTag(String tagName, String url, Long telegramChatId) {
-        if (!linkRepository.isUrlExists(url)) throw new NotFoundException("Такой ссылки не существует");
-        if (!tagRepository.isTagExists(tagName)) throw new NotFoundException("Такого тэга не существует");
-
-        LinkDTO link = linkRepository.findLinkByUrl(url);
-
-        if (!linkRepository.findUserLinks(telegramChatId).contains(link))
-            throw new NotFoundException("Вы не отслеживаете такую ссылку");
+        LinkDTO link = validateLinkAndTag(tagName, url, telegramChatId);
 
         List<String> tags = tagRepository.getUserTags(telegramChatId);
 
@@ -92,11 +89,7 @@ public class LinkServiceImpl implements LinkService {
     }
 
     private void removeLinkTag(String tagName, String url, Long telegramChatId) {
-        if (!linkRepository.isUrlExists(url)) throw new NotFoundException("Такой ссылки не существует");
-        if (!tagRepository.isTagExists(tagName)) throw new NotFoundException("Такого тэга не существует");
-        LinkDTO link = linkRepository.findLinkByUrl(url);
-        if (!linkRepository.findUserLinks(telegramChatId).contains(link))
-            throw new NotFoundException("Вы не отслеживаете такую ссылку");
+        LinkDTO link = validateLinkAndTag(tagName, url, telegramChatId);
         List<String> tags = tagRepository.getUserTags(telegramChatId);
 
         List<String> mutableTags = new ArrayList<>(link.tags());
@@ -105,5 +98,19 @@ public class LinkServiceImpl implements LinkService {
         if (!mutableTags.contains(tagName))
             throw new NotFoundException("Тэг " + tagName + " не принадлежит этой ссылке");
         tagRepository.removeLinkTag(tagName, url, telegramChatId);
+    }
+
+    private LinkDTO validateLinkAndTag(String tagName, String url, Long chatId) {
+        if (!linkRepository.isUrlExists(url)) {
+            throw new NotFoundException("Такой ссылки не существует");
+        }
+        if (!tagRepository.isTagExists(tagName)) {
+            throw new NotFoundException("Такого тэга не существует");
+        }
+        LinkDTO link = linkRepository.findLinkByUrl(url);
+        if (!linkRepository.findUserLinks(chatId).contains(link)) {
+            throw new NotFoundException("Вы не отслеживаете такую ссылку");
+        }
+        return link;
     }
 }

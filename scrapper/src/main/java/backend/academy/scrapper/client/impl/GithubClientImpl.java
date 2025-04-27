@@ -74,7 +74,7 @@ public class GithubClientImpl implements GithubClient {
                     Map topLevelAuthor = (Map) commit.get("author");
                     String username = topLevelAuthor != null
                             ? (String) topLevelAuthor.get("login")
-                            : (authorDetails != null ? (String) authorDetails.get("name") : "");
+                            : authorDetails != null ? (String) authorDetails.get("name") : "";
 
                     return new EventDTO(title, username, date, "", EventType.COMMIT);
                 })
