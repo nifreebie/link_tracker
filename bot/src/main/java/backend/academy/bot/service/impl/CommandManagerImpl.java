@@ -24,10 +24,11 @@ import backend.academy.bot.util.Applyer;
 import jakarta.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.Map;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class CommandManagerImpl implements CommandManager {
     private Map<Class<? extends Command>, Applyer> commandHandlers;
 
@@ -40,28 +41,6 @@ public class CommandManagerImpl implements CommandManager {
     private final CreateTagCommandHandler createTagCommandHandler;
     private final AddTagsToLinkCommandHandler addTagsToLinkCommandHandler;
     private final RemoveTagsFromLinkCommandHandler removeTagsFromLinkCommandHandler;
-
-    @Autowired
-    public CommandManagerImpl(
-            HelpCommandHandler helpCommandHandler,
-            ListCommandHandler listCommandHandler,
-            StartCommandHandler startCommandHandler,
-            TrackCommandHandler trackCommandHandler,
-            UntrackCommandHandler untrackCommandHandler,
-            CancelCommandHandler cancelCommandHandler,
-            CreateTagCommandHandler createTagCommandHandler,
-            AddTagsToLinkCommandHandler addTagsToLinkCommandHandler,
-            RemoveTagsFromLinkCommandHandler removeTagsFromLinkCommandHandler) {
-        this.helpCommandHandler = helpCommandHandler;
-        this.listCommandHandler = listCommandHandler;
-        this.startCommandHandler = startCommandHandler;
-        this.trackCommandHandler = trackCommandHandler;
-        this.untrackCommandHandler = untrackCommandHandler;
-        this.cancelCommandHandler = cancelCommandHandler;
-        this.createTagCommandHandler = createTagCommandHandler;
-        this.addTagsToLinkCommandHandler = addTagsToLinkCommandHandler;
-        this.removeTagsFromLinkCommandHandler = removeTagsFromLinkCommandHandler;
-    }
 
     @PostConstruct
     public void init() {

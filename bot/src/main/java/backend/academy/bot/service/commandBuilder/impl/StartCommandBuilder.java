@@ -7,6 +7,7 @@ import backend.academy.bot.model.command.Command;
 import backend.academy.bot.model.command.impl.StartCommand;
 import backend.academy.bot.repository.StateRepository;
 import backend.academy.bot.service.commandBuilder.CommandBuilder;
+import backend.academy.bot.util.BotMessages;
 import com.pengrad.telegrambot.model.Update;
 import java.util.HashMap;
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.Map;
 import org.springframework.stereotype.Component;
 
 @Component
-public class StartCommandBuilder extends CommandBuilder {
+public class StartCommandBuilder extends CommandBuilder implements BotMessages {
 
     private final ScrapperClient scrapperClient;
 
@@ -39,7 +40,7 @@ public class StartCommandBuilder extends CommandBuilder {
                 || state == UserState.AWAITING_ADD_TAGS_NAME
                 || state == UserState.AWAITING_REMOVE_TAGS_NAME
                 || state == UserState.AWAITING_REMOVE_TAGS_URL) {
-            throw new UnavaliableCommandException("Сейчас вы не можете использовать эту команду");
+            throw new UnavaliableCommandException(COMMAND_NOT_ALLOWED);
         }
         stateRepository.setState(update.message().chat().id(), UserState.DEFAULT);
         return new StartCommand(update.message().chat().id());

@@ -5,10 +5,11 @@ import backend.academy.bot.model.UserState;
 import backend.academy.bot.model.command.impl.CancelCommand;
 import backend.academy.bot.repository.StateRepository;
 import backend.academy.bot.service.commandHandler.CommandHandler;
+import backend.academy.bot.util.BotMessages;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CancelCommandHandler extends CommandHandler<CancelCommand> {
+public class CancelCommandHandler extends CommandHandler<CancelCommand> implements BotMessages {
     protected CancelCommandHandler(StateRepository repository, ScrapperClient scrapperClient) {
         super(repository, scrapperClient);
     }
@@ -16,6 +17,6 @@ public class CancelCommandHandler extends CommandHandler<CancelCommand> {
     @Override
     public String handle(CancelCommand command) {
         repository.setState(command.chatId(), UserState.DEFAULT);
-        return "Команда отменена";
+        return CANCELED_COMMAND;
     }
 }

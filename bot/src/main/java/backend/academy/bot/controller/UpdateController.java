@@ -1,9 +1,9 @@
 package backend.academy.bot.controller;
 
 import backend.academy.bot.model.dto.request.LinkUpdateRequest;
-import backend.academy.bot.util.UpdateFormatter;
-import com.pengrad.telegrambot.TelegramBot;
-import com.pengrad.telegrambot.request.SendMessage;
+import backend.academy.bot.openapi.src.main.java.com.baeldung.openapi.api.UpdatesApi;
+import backend.academy.bot.service.UpdateService;
+import backend.academy.bot.util.BotMessages;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,20 +13,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1")
-public class UpdateController {
+public class UpdateController implements UpdatesApi, BotMessages {
 
-    private final TelegramBot telegramBot;
+    private final UpdateService updateService;
 
     @Autowired
-    public UpdateController(TelegramBot telegramBot) {
-        this.telegramBot = telegramBot;
+    public UpdateController(UpdateService updateService) {
+        this.updateService = updateService;
     }
 
+    @Override
     @PostMapping("/updates")
-    public ResponseEntity<String> update(@RequestBody LinkUpdateRequest request) {
-        request.tgChatIds()
-                .forEach(
-                        chatId -> telegramBot.execute(new SendMessage(chatId, UpdateFormatter.formatMessage(request))));
-        return ResponseEntity.ok("Обновление обработано");
+    public ResponseEntity<String> updatesPost(@RequestBody LinkUpdateRequest request) {
+        updateService.sendUpdates(request);
+        return ResponseEntity.ok(UPDATE_OK_RESPONSE);
     }
 }

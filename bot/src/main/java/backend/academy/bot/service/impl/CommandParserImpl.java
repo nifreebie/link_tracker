@@ -17,10 +17,11 @@ import com.pengrad.telegrambot.model.Update;
 import jakarta.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.Map;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class CommandParserImpl implements CommandParser {
     private Map<String, CommandBuilder> commandBuilders;
 
@@ -33,28 +34,6 @@ public class CommandParserImpl implements CommandParser {
     private final CreateTagCommandBuilder createTagCommandBuilder;
     private final AddTagsToLinkCommandBuilder addTagsToLinkCommandBuilder;
     private final RemoveTagsFromLinkCommandBuilder removeTagsFromLinkCommandBuilder;
-
-    @Autowired
-    public CommandParserImpl(
-            HelpCommandBuilder helpCommandBuilder,
-            ListCommandBuilder listCommandBuilder,
-            StartCommandBuilder startCommandBuilder,
-            TrackCommandBuilder trackCommandBuilder,
-            UntrackCommandBuilder untrackCommandBuilder,
-            CancelCommandBuilder cancelCommandBuilder,
-            CreateTagCommandBuilder createTagCommandBuilder,
-            AddTagsToLinkCommandBuilder addTagsToLinkCommandBuilder,
-            RemoveTagsFromLinkCommandBuilder removeTagsFromLinkCommandBuilder) {
-        this.helpCommandBuilder = helpCommandBuilder;
-        this.listCommandBuilder = listCommandBuilder;
-        this.startCommandBuilder = startCommandBuilder;
-        this.trackCommandBuilder = trackCommandBuilder;
-        this.untrackCommandBuilder = untrackCommandBuilder;
-        this.cancelCommandBuilder = cancelCommandBuilder;
-        this.createTagCommandBuilder = createTagCommandBuilder;
-        this.addTagsToLinkCommandBuilder = addTagsToLinkCommandBuilder;
-        this.removeTagsFromLinkCommandBuilder = removeTagsFromLinkCommandBuilder;
-    }
 
     @PostConstruct
     public void init() {

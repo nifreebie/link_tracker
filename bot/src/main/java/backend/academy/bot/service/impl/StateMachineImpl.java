@@ -11,6 +11,7 @@ import backend.academy.bot.model.command.impl.TrackCommand;
 import backend.academy.bot.model.command.impl.UntrackCommand;
 import backend.academy.bot.repository.StateRepository;
 import backend.academy.bot.service.StateMachine;
+import backend.academy.bot.util.BotMessages;
 import backend.academy.bot.util.KeyBoardInitializer;
 import backend.academy.bot.util.Validator;
 import com.pengrad.telegrambot.TelegramBot;
@@ -30,7 +31,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Setter
-public class StateMachineImpl implements StateMachine {
+public class StateMachineImpl implements StateMachine, BotMessages {
 
     private final TelegramBot telegramBot;
     private final StateRepository stateRepository;
@@ -47,137 +48,30 @@ public class StateMachineImpl implements StateMachine {
 
     @Override
     public Command process(Long chatId, Update update) {
-        Long actualChatId;
-        if (update.message() != null) {
-            actualChatId = update.message().chat().id();
-        } else if (update.callbackQuery() != null) {
-            actualChatId = update.callbackQuery().message().chat().id();
-        } else {
+        Long actualChatId = getChatId(update);
+        if (actualChatId == null) return null;
+
+        UserState userState = stateRepository.getStateById(actualChatId);
+        if (userState == null) {
+            telegramBot.execute(new SendMessage(actualChatId, REGISTRATION_NEED));
             return null;
         }
 
         KeyBoardInitializer keyBoardInitializer =
-                new KeyBoardInitializer(scrapperClient.getUserTags(actualChatId).block());
-        UserState userState = stateRepository.getStateById(actualChatId);
-        if (userState == null) {
-            telegramBot.execute(new SendMessage(actualChatId, "Сначала нужно зарегистрироваться, нажмите /start"));
-        } else {
-            switch (userState) {
-                case AWAITING_TRACK_URL -> {
-                    String text = update.message().text();
-                    if (!Validator.isGitHubRepo(text) && !Validator.isStackOverflowQuestion(text)) {
-                        telegramBot.execute(new SendMessage(actualChatId, "Невалидная ссылка"));
-                    } else {
-                        CommandContext commandContext = new CommandContext();
-                        commandContext.url(text);
-                        commandContext.tags(new ArrayList<>());
-                        commandContexts.put(actualChatId, commandContext);
-                        stateRepository.setState(actualChatId, UserState.AWAITING_TAGS);
-                        telegramBot.execute(new SendMessage(actualChatId, "Выберите тэги")
-                                .replyMarkup(keyBoardInitializer.generateKeyboard("")));
-                    }
-                }
-                case AWAITING_TAGS -> {
-                    if (update.callbackQuery() != null) {
-                        String callbackData = update.callbackQuery().data();
-                        List<String> selectedTags = handleCallback(update.callbackQuery(), keyBoardInitializer);
-                        if (callbackData.startsWith("done_")) {
-                            commandContexts.get(actualChatId).tags(selectedTags);
-                            stateRepository.setState(actualChatId, UserState.AWAITING_FILTERS);
-                            telegramBot.execute(new SendMessage(actualChatId, "Введите фильтры"));
-                        }
-                    }
-                }
-                case AWAITING_FILTERS -> {
-                    String list = update.message().text();
-                    List<String> filters = Arrays.stream(list.split("\\s+")).toList();
-                    commandContexts.get(actualChatId).filters(filters);
-                    stateRepository.setState(actualChatId, UserState.DEFAULT);
-                    CommandContext context = commandContexts.get(actualChatId);
-                    commandContexts.remove(actualChatId);
-                    return new TrackCommand(actualChatId, context.url(), context.tags(), context.filters());
-                }
-                case AWAITING_UNTRACK_URL -> {
-                    String text = update.message().text();
-                    if (!Validator.isGitHubRepo(text) && !Validator.isStackOverflowQuestion(text)) {
-                        telegramBot.execute(new SendMessage(actualChatId, "Невалидная ссылка"));
-                    } else {
-                        stateRepository.setState(actualChatId, UserState.DEFAULT);
-                        return new UntrackCommand(actualChatId, text);
-                    }
-                }
-                case AWAITING_TAG_NAME -> {
-                    stateRepository.setState(actualChatId, UserState.DEFAULT);
-                    return new CreateTagCommand(actualChatId, update.message().text());
-                }
+            new KeyBoardInitializer(scrapperClient.getUserTags(actualChatId).block());
 
-                case AWAITING_ADD_TAGS_URL -> {
-                    String text = update.message().text();
-                    if (!Validator.isGitHubRepo(text) && !Validator.isStackOverflowQuestion(text)) {
-                        telegramBot.execute(new SendMessage(actualChatId, "Невалидная ссылка"));
-                    } else {
-                        CommandContext commandContext = new CommandContext();
-                        commandContext.url(text);
-                        commandContext.tags(new ArrayList<>());
-                        commandContexts.put(actualChatId, commandContext);
-                        stateRepository.setState(actualChatId, UserState.AWAITING_ADD_TAGS_NAME);
-                        telegramBot.execute(new SendMessage(actualChatId, "Выберите тэги, которые хотите добавить")
-                                .replyMarkup(keyBoardInitializer.generateKeyboard("")));
-                    }
-                }
-
-                case AWAITING_REMOVE_TAGS_URL -> {
-                    String text = update.message().text();
-                    if (!Validator.isGitHubRepo(text) && !Validator.isStackOverflowQuestion(text)) {
-                        telegramBot.execute(new SendMessage(actualChatId, "Невалидная ссылка"));
-                    } else {
-                        CommandContext commandContext = new CommandContext();
-                        commandContext.url(text);
-                        commandContext.tags(new ArrayList<>());
-                        commandContexts.put(actualChatId, commandContext);
-                        stateRepository.setState(actualChatId, UserState.AWAITING_REMOVE_TAGS_NAME);
-                        telegramBot.execute(new SendMessage(actualChatId, "Выберите тэги, которые хотите удалить")
-                                .replyMarkup(keyBoardInitializer.generateKeyboard("")));
-                    }
-                }
-
-                case AWAITING_REMOVE_TAGS_NAME -> {
-                    if (update.callbackQuery() != null) {
-                        String callbackData = update.callbackQuery().data();
-                        List<String> selectedTags = handleCallback(update.callbackQuery(), keyBoardInitializer);
-                        if (callbackData.startsWith("done_")) {
-                            commandContexts.get(actualChatId).tags(selectedTags);
-                            stateRepository.setState(actualChatId, UserState.DEFAULT);
-                            CommandContext context = commandContexts.get(actualChatId);
-                            commandContexts.remove(actualChatId);
-                            return new RemoveTagsFromLinkCommand(actualChatId, context.url(), context.tags());
-                        }
-                    }
-                }
-
-                case AWAITING_ADD_TAGS_NAME -> {
-                    if (update.callbackQuery() != null) {
-                        String callbackData = update.callbackQuery().data();
-                        List<String> selectedTags = handleCallback(update.callbackQuery(), keyBoardInitializer);
-                        if (callbackData.startsWith("done_")) {
-                            commandContexts.get(actualChatId).tags(selectedTags);
-                            stateRepository.setState(actualChatId, UserState.DEFAULT);
-                            CommandContext context = commandContexts.get(actualChatId);
-                            commandContexts.remove(actualChatId);
-                            return new AddTagsToLinkCommand(actualChatId, context.url(), context.tags());
-                        }
-                    }
-                }
-
-                case DEFAULT -> {
-                    if (update.message() != null) {
-                        telegramBot.execute(new SendMessage(
-                                actualChatId, "Команды " + update.message().text() + " не существует"));
-                    }
-                }
-            }
-        }
-        return null;
+        return switch (userState) {
+            case AWAITING_TRACK_URL -> handleAwaitingTrackUrl(update, actualChatId, keyBoardInitializer);
+            case AWAITING_TAGS -> handleAwaitingTags(update, actualChatId, keyBoardInitializer);
+            case AWAITING_FILTERS -> handleAwaitingFilters(update, actualChatId);
+            case AWAITING_UNTRACK_URL -> handleAwaitingUntrackUrl(update, actualChatId);
+            case AWAITING_TAG_NAME -> handleAwaitingTagName(update, actualChatId);
+            case AWAITING_ADD_TAGS_URL -> handleAwaitingAddTagsUrl(update, actualChatId, keyBoardInitializer);
+            case AWAITING_REMOVE_TAGS_URL -> handleAwaitingRemoveTagsUrl(update, actualChatId, keyBoardInitializer);
+            case AWAITING_REMOVE_TAGS_NAME -> handleAwaitingRemoveTagsName(update, actualChatId, keyBoardInitializer);
+            case AWAITING_ADD_TAGS_NAME -> handleAwaitingAddTagsName(update, actualChatId, keyBoardInitializer);
+            case DEFAULT -> handleDefault(update, actualChatId);
+        };
     }
 
     private List<String> handleCallback(CallbackQuery callbackQuery, KeyBoardInitializer keyBoardInitializer) {
@@ -188,7 +82,7 @@ public class StateMachineImpl implements StateMachine {
 
         CommandContext context = commandContexts.get(chatId);
         List<String> selectedTagList =
-                context != null && context.tags() != null ? new ArrayList<>(context.tags()) : new ArrayList<>();
+            context != null && context.tags() != null ? new ArrayList<>(context.tags()) : new ArrayList<>();
 
         if (data.startsWith("done_")) {
             return selectedTagList;
@@ -209,11 +103,137 @@ public class StateMachineImpl implements StateMachine {
                 context.tags(selectedTagList);
             }
             telegramBot.execute(new EditMessageReplyMarkup(chatId, messageId)
-                    .replyMarkup(keyBoardInitializer.generateKeyboard(newSelectedTags)));
+                .replyMarkup(keyBoardInitializer.generateKeyboard(newSelectedTags)));
 
             return selectedTagList;
         }
 
         return new ArrayList<>();
+    }
+
+    private Long getChatId(Update update) {
+        if (update.message() != null) return update.message().chat().id();
+        if (update.callbackQuery() != null)
+            return update.callbackQuery().message().chat().id();
+        return null;
+    }
+
+    private Command handleAwaitingTrackUrl(Update update, Long chatId, KeyBoardInitializer keyBoardInitializer) {
+        String text = update.message().text();
+        if (!Validator.isGitHubRepo(text) && !Validator.isStackOverflowQuestion(text)) {
+            telegramBot.execute(new SendMessage(chatId, INVALID_LINK));
+        } else {
+            CommandContext context = new CommandContext().url(text).tags(new ArrayList<>());
+            commandContexts.put(chatId, context);
+            stateRepository.setState(chatId, UserState.AWAITING_TAGS);
+            telegramBot.execute(
+                new SendMessage(chatId, CHOOSE_TAGS).replyMarkup(keyBoardInitializer.generateKeyboard("")));
+        }
+        return null;
+    }
+
+    private Command handleAwaitingTags(Update update, Long chatId, KeyBoardInitializer keyBoardInitializer) {
+        if (update.callbackQuery() != null) {
+            String callbackData = update.callbackQuery().data();
+            List<String> selectedTags = handleCallback(update.callbackQuery(), keyBoardInitializer);
+            if (callbackData.startsWith("done_")) {
+                commandContexts.get(chatId).tags(selectedTags);
+                stateRepository.setState(chatId, UserState.AWAITING_FILTERS);
+                telegramBot.execute(new SendMessage(chatId, ENTER_FIlTERS));
+            }
+        }
+        return null;
+    }
+
+    private Command handleAwaitingFilters(Update update, Long chatId) {
+        List<String> filters =
+            Arrays.stream(update.message().text().split("\\s+")).toList();
+        CommandContext context = commandContexts.get(chatId);
+        context.filters(filters);
+        stateRepository.setState(chatId, UserState.DEFAULT);
+        commandContexts.remove(chatId);
+        return new TrackCommand(chatId, context.url(), context.tags(), context.filters());
+    }
+
+    private Command handleAwaitingUntrackUrl(Update update, Long chatId) {
+        String text = update.message().text();
+        if (!Validator.isGitHubRepo(text) && !Validator.isStackOverflowQuestion(text)) {
+            telegramBot.execute(new SendMessage(chatId, INVALID_LINK));
+            return null;
+        }
+        stateRepository.setState(chatId, UserState.DEFAULT);
+        return new UntrackCommand(chatId, text);
+    }
+
+    private Command handleAwaitingTagName(Update update, Long chatId) {
+        stateRepository.setState(chatId, UserState.DEFAULT);
+        return new CreateTagCommand(chatId, update.message().text());
+    }
+
+    private Command handleAwaitingAddTagsUrl(Update update, Long chatId, KeyBoardInitializer keyBoardInitializer) {
+        return handleUrlInputWithTagStep(
+            update, chatId, keyBoardInitializer, UserState.AWAITING_ADD_TAGS_NAME, ENTER_ADD_TAG_NAME);
+    }
+
+    private Command handleAwaitingRemoveTagsUrl(Update update, Long chatId, KeyBoardInitializer keyBoardInitializer) {
+        return handleUrlInputWithTagStep(
+            update, chatId, keyBoardInitializer, UserState.AWAITING_REMOVE_TAGS_NAME, ENTER_REMOVE_TAG_NAME);
+    }
+
+    private Command handleAwaitingRemoveTagsName(Update update, Long chatId, KeyBoardInitializer keyBoardInitializer) {
+        return handleTagSelection(
+            update, chatId, keyBoardInitializer, UserState.DEFAULT, RemoveTagsFromLinkCommand::new);
+    }
+
+    private Command handleAwaitingAddTagsName(Update update, Long chatId, KeyBoardInitializer keyBoardInitializer) {
+        return handleTagSelection(update, chatId, keyBoardInitializer, UserState.DEFAULT, AddTagsToLinkCommand::new);
+    }
+
+    private Command handleDefault(Update update, Long chatId) {
+        if (update.message() != null) {
+            telegramBot.execute(
+                new SendMessage(chatId, "Команды " + update.message().text() + " не существует"));
+        }
+        return null;
+    }
+
+    private Command handleUrlInputWithTagStep(
+        Update update, Long chatId, KeyBoardInitializer keyboard, UserState nextState, String prompt) {
+        String text = update.message().text();
+        if (!Validator.isGitHubRepo(text) && !Validator.isStackOverflowQuestion(text)) {
+            telegramBot.execute(new SendMessage(chatId, INVALID_LINK));
+            return null;
+        }
+
+        CommandContext context = new CommandContext().url(text).tags(new ArrayList<>());
+        commandContexts.put(chatId, context);
+        stateRepository.setState(chatId, nextState);
+        telegramBot.execute(new SendMessage(chatId, prompt).replyMarkup(keyboard.generateKeyboard("")));
+        return null;
+    }
+
+    private Command handleTagSelection(
+        Update update,
+        Long chatId,
+        KeyBoardInitializer keyboard,
+        UserState nextState,
+        TagApplyer<Long, String, List<String>, Command> commandConstructor) {
+        if (update.callbackQuery() != null) {
+            String callbackData = update.callbackQuery().data();
+            List<String> selectedTags = handleCallback(update.callbackQuery(), keyboard);
+            if (callbackData.startsWith("done_")) {
+                CommandContext context = commandContexts.get(chatId);
+                context.tags(selectedTags);
+                stateRepository.setState(chatId, nextState);
+                commandContexts.remove(chatId);
+                return commandConstructor.apply(chatId, context.url(), context.tags());
+            }
+        }
+        return null;
+    }
+
+    @FunctionalInterface
+    private interface TagApplyer<A, B, C, R> {
+        R apply(A a, B b, C c);
     }
 }

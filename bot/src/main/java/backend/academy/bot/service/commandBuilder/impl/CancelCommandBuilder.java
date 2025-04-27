@@ -7,11 +7,12 @@ import backend.academy.bot.model.command.Command;
 import backend.academy.bot.model.command.impl.CancelCommand;
 import backend.academy.bot.repository.StateRepository;
 import backend.academy.bot.service.commandBuilder.CommandBuilder;
+import backend.academy.bot.util.BotMessages;
 import com.pengrad.telegrambot.model.Update;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CancelCommandBuilder extends CommandBuilder {
+public class CancelCommandBuilder extends CommandBuilder implements BotMessages {
 
     protected CancelCommandBuilder(StateRepository stateRepository) {
         super(stateRepository);
@@ -21,10 +22,10 @@ public class CancelCommandBuilder extends CommandBuilder {
     public Command build(Update update) {
         UserState state = stateRepository.getStateById(update.message().chat().id());
         if (state == null) {
-            throw new UnregisteredException("Сначала нужно зарегистрироваться, нажмите /start");
+            throw new UnregisteredException(REGISTRATION_NEED);
         }
         if (state == UserState.DEFAULT) {
-            throw new UnavaliableCommandException("Сейчас вам нечего отменять");
+            throw new UnavaliableCommandException(CANCEL_NOT_ALLOWED);
         }
         return new CancelCommand(update.message().chat().id());
     }

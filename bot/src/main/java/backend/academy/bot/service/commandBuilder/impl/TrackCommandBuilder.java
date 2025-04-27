@@ -6,13 +6,14 @@ import backend.academy.bot.model.UserState;
 import backend.academy.bot.model.command.Command;
 import backend.academy.bot.repository.StateRepository;
 import backend.academy.bot.service.commandBuilder.CommandBuilder;
+import backend.academy.bot.util.BotMessages;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
 import org.springframework.stereotype.Component;
 
 @Component
-public class TrackCommandBuilder extends CommandBuilder {
+public class TrackCommandBuilder extends CommandBuilder implements BotMessages {
 
     private final TelegramBot telegramBot;
 
@@ -25,13 +26,13 @@ public class TrackCommandBuilder extends CommandBuilder {
     public Command build(Update update) {
         UserState state = stateRepository.getStateById(update.message().chat().id());
         if (state == null) {
-            throw new UnregisteredException("Сначала нужно зарегистрироваться, нажмите /start");
+            throw new UnregisteredException(REGISTRATION_NEED);
         }
         if (state != UserState.DEFAULT) {
-            throw new UnavaliableCommandException("Сейчас вы не можете использовать эту команду");
+            throw new UnavaliableCommandException(COMMAND_NOT_ALLOWED);
         }
         stateRepository.setState(update.message().chat().id(), UserState.AWAITING_TRACK_URL);
-        telegramBot.execute(new SendMessage(update.message().chat().id(), "Введите ссылку"));
+        telegramBot.execute(new SendMessage(update.message().chat().id(), ENTER_LINK));
         return null;
     }
 }
