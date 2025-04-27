@@ -1,5 +1,14 @@
 package backend.academy.bot;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import backend.academy.bot.client.ScrapperClient;
 import backend.academy.bot.model.command.impl.ListCommand;
 import backend.academy.bot.model.command.impl.TrackCommand;
@@ -27,30 +36,20 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 import reactor.core.publisher.Mono;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest(properties = "spring.main.allow-bean-definition-overriding=true")
 @Testcontainers
 public class RedisCacheTest {
     @Container
     static GenericContainer<?> redis =
-        new GenericContainer<>(DockerImageName.parse("redis:7-alpine")).withExposedPorts(6379);
+            new GenericContainer<>(DockerImageName.parse("redis:7-alpine")).withExposedPorts(6379);
 
     @TestConfiguration
     static class RedisTestConfig {
         @Bean
         public LettuceConnectionFactory redisConnectionFactory() {
-            RedisStandaloneConfiguration cfg = new RedisStandaloneConfiguration(
-                redis.getHost(),
-                redis.getMappedPort(6379)
-            );
+            RedisStandaloneConfiguration cfg =
+                    new RedisStandaloneConfiguration(redis.getHost(), redis.getMappedPort(6379));
             return new LettuceConnectionFactory(cfg);
         }
 
@@ -98,7 +97,7 @@ public class RedisCacheTest {
 
         when(scrapperClient.getUserLinks(anyLong())).thenReturn(Mono.just(listLinksResponse));
         when(scrapperClient.track(anyLong(), anyString(), anyList(), anyList()))
-            .thenReturn(Mono.just("Ccылка отслеживаеется"));
+                .thenReturn(Mono.just("Ccылка отслеживаеется"));
         when(scrapperClient.untrack(anyLong(), anyString())).thenReturn(Mono.just("Ссылка больше не отслеживается"));
     }
 
