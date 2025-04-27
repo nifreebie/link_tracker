@@ -2,10 +2,10 @@ package backend.academy.scrapper.interceptor;
 
 import backend.academy.scrapper.model.dto.response.ApiErrorResponse;
 import backend.academy.scrapper.service.TelegramChatService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Collections;
+import org.apache.commons.text.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -40,7 +40,7 @@ public class AuthInterceptor implements HandlerInterceptor {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
-            response.getWriter().write(new ObjectMapper().writeValueAsString(errorResponse));
+            response.getWriter().write(StringEscapeUtils.escapeHtml4(errorResponse.toString()));
             return false;
         }
         return true;

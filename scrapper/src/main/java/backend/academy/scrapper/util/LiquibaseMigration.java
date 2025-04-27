@@ -25,7 +25,17 @@ public class LiquibaseMigration {
             database.setConnection(new JdbcConnection(conn));
 
             Path changelogDir = changeLogPath.getParent();
-            String changelogFileName = changeLogPath.getFileName().toString();
+            if (changelogDir == null) {
+                log.warn("Change log path '{}' does not have a parent, using current directory", changeLogPath);
+                changelogDir = Path.of(".");
+            }
+
+            Path fileNamePath = changeLogPath.getFileName();
+            if (fileNamePath == null) {
+                throw new IllegalArgumentException("Change log path must have a file name: " + changeLogPath);
+            }
+            String changelogFileName = fileNamePath.toString();
+
             Map<String, Object> scopeValues = new HashMap<>();
             scopeValues.put(Scope.Attr.resourceAccessor.name(), new DirectoryResourceAccessor(changelogDir.toFile()));
 
@@ -35,7 +45,6 @@ public class LiquibaseMigration {
                 updateCommand.addArgumentValue("changelogFile", changelogFileName);
                 updateCommand.execute();
             });
-
         } catch (Exception e) {
             log.error("Error while migrating changelog");
         }
