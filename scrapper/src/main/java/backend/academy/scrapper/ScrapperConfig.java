@@ -10,6 +10,10 @@ public record ScrapperConfig(
         @NotEmpty String githubToken,
         StackOverflowCredentials stackOverflow,
         @NotEmpty String accessType,
-        Integer batchSize) {
+        Integer batchSize,
+        String messageTransport,
+        Topics topics) {
     public record StackOverflowCredentials(@NotEmpty String key, @NotEmpty String accessToken) {}
+
+    public record Topics(String updates, String dlq) {}
 }

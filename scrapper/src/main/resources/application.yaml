@@ -5,6 +5,10 @@ app:
     access-token: ${SO_ACCESS_TOKEN}
   access-type: SQL
   batch-size: 100
+  message-transport: Kafka
+  topics:
+    updates: updates
+    dlq: dead-letter-queue
 
 spring:
   application:
@@ -21,6 +25,11 @@ spring:
     password: nis150905
   config:
     import: optional:file:.env[.properties]
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
 server:
   port: 8081
