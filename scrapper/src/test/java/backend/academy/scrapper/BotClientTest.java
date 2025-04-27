@@ -31,7 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 @SpringBootTest
-@TestPropertySource(properties = "app.access-type=ORM")
+@TestPropertySource(properties = {"app.access-type=ORM", "app.message-transport=Kafka"})
 @Import({TestcontainersConfiguration.class})
 public class BotClientTest {
     private WireMockServer wireMockServer;
