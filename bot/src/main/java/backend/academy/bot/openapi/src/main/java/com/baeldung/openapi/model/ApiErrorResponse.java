@@ -9,13 +9,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-/**
- * ApiErrorResponse
- */
+/** ApiErrorResponse */
 @Generated(
-    value = "org.openapitools.codegen.languages.SpringCodegen",
-    date = "2025-04-23T11:51:06.950796200Z[UTC]",
-    comments = "Generator version: 7.8.0")
+        value = "org.openapitools.codegen.languages.SpringCodegen",
+        date = "2025-04-23T11:51:06.950796200Z[UTC]",
+        comments = "Generator version: 7.8.0")
 public class ApiErrorResponse {
 
     private String description;
@@ -147,10 +145,10 @@ public class ApiErrorResponse {
         }
         ApiErrorResponse apiErrorResponse = (ApiErrorResponse) o;
         return Objects.equals(this.description, apiErrorResponse.description)
-            && Objects.equals(this.code, apiErrorResponse.code)
-            && Objects.equals(this.exceptionName, apiErrorResponse.exceptionName)
-            && Objects.equals(this.exceptionMessage, apiErrorResponse.exceptionMessage)
-            && Objects.equals(this.stacktrace, apiErrorResponse.stacktrace);
+                && Objects.equals(this.code, apiErrorResponse.code)
+                && Objects.equals(this.exceptionName, apiErrorResponse.exceptionName)
+                && Objects.equals(this.exceptionMessage, apiErrorResponse.exceptionMessage)
+                && Objects.equals(this.stacktrace, apiErrorResponse.stacktrace);
     }
 
     @Override
@@ -166,16 +164,14 @@ public class ApiErrorResponse {
         sb.append("    code: ").append(toIndentedString(code)).append("\n");
         sb.append("    exceptionName: ").append(toIndentedString(exceptionName)).append("\n");
         sb.append("    exceptionMessage: ")
-            .append(toIndentedString(exceptionMessage))
-            .append("\n");
+                .append(toIndentedString(exceptionMessage))
+                .append("\n");
         sb.append("    stacktrace: ").append(toIndentedString(stacktrace)).append("\n");
         sb.append("}");
         return sb.toString();
     }
 
-    /**
-     * Convert the given object to string with each line indented by 4 spaces (except the first line).
-     */
+    /** Convert the given object to string with each line indented by 4 spaces (except the first line). */
     private String toIndentedString(Object o) {
         if (o == null) {
             return "null";

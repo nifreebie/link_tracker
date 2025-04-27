@@ -10,13 +10,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-/**
- * LinkUpdate
- */
+/** LinkUpdate */
 @Generated(
-    value = "org.openapitools.codegen.languages.SpringCodegen",
-    date = "2025-04-23T11:51:06.950796200Z[UTC]",
-    comments = "Generator version: 7.8.0")
+        value = "org.openapitools.codegen.languages.SpringCodegen",
+        date = "2025-04-23T11:51:06.950796200Z[UTC]",
+        comments = "Generator version: 7.8.0")
 public class LinkUpdate {
 
     private Long id;
@@ -127,9 +125,9 @@ public class LinkUpdate {
         }
         LinkUpdate linkUpdate = (LinkUpdate) o;
         return Objects.equals(this.id, linkUpdate.id)
-            && Objects.equals(this.url, linkUpdate.url)
-            && Objects.equals(this.description, linkUpdate.description)
-            && Objects.equals(this.tgChatIds, linkUpdate.tgChatIds);
+                && Objects.equals(this.url, linkUpdate.url)
+                && Objects.equals(this.description, linkUpdate.description)
+                && Objects.equals(this.tgChatIds, linkUpdate.tgChatIds);
     }
 
     @Override
@@ -149,9 +147,7 @@ public class LinkUpdate {
         return sb.toString();
     }
 
-    /**
-     * Convert the given object to string with each line indented by 4 spaces (except the first line).
-     */
+    /** Convert the given object to string with each line indented by 4 spaces (except the first line). */
     private String toIndentedString(Object o) {
         if (o == null) {
             return "null";

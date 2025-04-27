@@ -58,7 +58,7 @@ public class StateMachineImpl implements StateMachine, BotMessages {
         }
 
         KeyBoardInitializer keyBoardInitializer =
-            new KeyBoardInitializer(scrapperClient.getUserTags(actualChatId).block());
+                new KeyBoardInitializer(scrapperClient.getUserTags(actualChatId).block());
 
         return switch (userState) {
             case AWAITING_TRACK_URL -> handleAwaitingTrackUrl(update, actualChatId, keyBoardInitializer);
@@ -82,7 +82,7 @@ public class StateMachineImpl implements StateMachine, BotMessages {
 
         CommandContext context = commandContexts.get(chatId);
         List<String> selectedTagList =
-            context != null && context.tags() != null ? new ArrayList<>(context.tags()) : new ArrayList<>();
+                context != null && context.tags() != null ? new ArrayList<>(context.tags()) : new ArrayList<>();
 
         if (data.startsWith("done_")) {
             return selectedTagList;
@@ -103,7 +103,7 @@ public class StateMachineImpl implements StateMachine, BotMessages {
                 context.tags(selectedTagList);
             }
             telegramBot.execute(new EditMessageReplyMarkup(chatId, messageId)
-                .replyMarkup(keyBoardInitializer.generateKeyboard(newSelectedTags)));
+                    .replyMarkup(keyBoardInitializer.generateKeyboard(newSelectedTags)));
 
             return selectedTagList;
         }
@@ -127,7 +127,7 @@ public class StateMachineImpl implements StateMachine, BotMessages {
             commandContexts.put(chatId, context);
             stateRepository.setState(chatId, UserState.AWAITING_TAGS);
             telegramBot.execute(
-                new SendMessage(chatId, CHOOSE_TAGS).replyMarkup(keyBoardInitializer.generateKeyboard("")));
+                    new SendMessage(chatId, CHOOSE_TAGS).replyMarkup(keyBoardInitializer.generateKeyboard("")));
         }
         return null;
     }
@@ -147,7 +147,7 @@ public class StateMachineImpl implements StateMachine, BotMessages {
 
     private Command handleAwaitingFilters(Update update, Long chatId) {
         List<String> filters =
-            Arrays.stream(update.message().text().split("\\s+")).toList();
+                Arrays.stream(update.message().text().split("\\s+")).toList();
         CommandContext context = commandContexts.get(chatId);
         context.filters(filters);
         stateRepository.setState(chatId, UserState.DEFAULT);
@@ -172,17 +172,17 @@ public class StateMachineImpl implements StateMachine, BotMessages {
 
     private Command handleAwaitingAddTagsUrl(Update update, Long chatId, KeyBoardInitializer keyBoardInitializer) {
         return handleUrlInputWithTagStep(
-            update, chatId, keyBoardInitializer, UserState.AWAITING_ADD_TAGS_NAME, ENTER_ADD_TAG_NAME);
+                update, chatId, keyBoardInitializer, UserState.AWAITING_ADD_TAGS_NAME, ENTER_ADD_TAG_NAME);
     }
 
     private Command handleAwaitingRemoveTagsUrl(Update update, Long chatId, KeyBoardInitializer keyBoardInitializer) {
         return handleUrlInputWithTagStep(
-            update, chatId, keyBoardInitializer, UserState.AWAITING_REMOVE_TAGS_NAME, ENTER_REMOVE_TAG_NAME);
+                update, chatId, keyBoardInitializer, UserState.AWAITING_REMOVE_TAGS_NAME, ENTER_REMOVE_TAG_NAME);
     }
 
     private Command handleAwaitingRemoveTagsName(Update update, Long chatId, KeyBoardInitializer keyBoardInitializer) {
         return handleTagSelection(
-            update, chatId, keyBoardInitializer, UserState.DEFAULT, RemoveTagsFromLinkCommand::new);
+                update, chatId, keyBoardInitializer, UserState.DEFAULT, RemoveTagsFromLinkCommand::new);
     }
 
     private Command handleAwaitingAddTagsName(Update update, Long chatId, KeyBoardInitializer keyBoardInitializer) {
@@ -192,13 +192,13 @@ public class StateMachineImpl implements StateMachine, BotMessages {
     private Command handleDefault(Update update, Long chatId) {
         if (update.message() != null) {
             telegramBot.execute(
-                new SendMessage(chatId, "Команды " + update.message().text() + " не существует"));
+                    new SendMessage(chatId, "Команды " + update.message().text() + " не существует"));
         }
         return null;
     }
 
     private Command handleUrlInputWithTagStep(
-        Update update, Long chatId, KeyBoardInitializer keyboard, UserState nextState, String prompt) {
+            Update update, Long chatId, KeyBoardInitializer keyboard, UserState nextState, String prompt) {
         String text = update.message().text();
         if (!Validator.isGitHubRepo(text) && !Validator.isStackOverflowQuestion(text)) {
             telegramBot.execute(new SendMessage(chatId, INVALID_LINK));
@@ -213,11 +213,11 @@ public class StateMachineImpl implements StateMachine, BotMessages {
     }
 
     private Command handleTagSelection(
-        Update update,
-        Long chatId,
-        KeyBoardInitializer keyboard,
-        UserState nextState,
-        TagApplyer<Long, String, List<String>, Command> commandConstructor) {
+            Update update,
+            Long chatId,
+            KeyBoardInitializer keyboard,
+            UserState nextState,
+            TagApplyer<Long, String, List<String>, Command> commandConstructor) {
         if (update.callbackQuery() != null) {
             String callbackData = update.callbackQuery().data();
             List<String> selectedTags = handleCallback(update.callbackQuery(), keyboard);
