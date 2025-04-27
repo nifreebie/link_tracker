@@ -9,12 +9,19 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -25,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @ConditionalOnProperty(name = "app.access-type", havingValue = "SQL")
 @Repository
+@Slf4j
 public class LinkRepositoryJDBC implements LinkRepository {
 
     private static class Mapper implements RowMapper<LinkDTO> {
@@ -38,6 +46,41 @@ public class LinkRepositoryJDBC implements LinkRepository {
                     ? List.of(rs.getString("filters").split(","))
                     : Collections.emptyList();
             return new LinkDTO(id, url, new ArrayList<>(), filters, lastUpdated, new ArrayList<>(), linkType);
+        }
+    }
+
+    private static class LinkWithUsersExtractor implements ResultSetExtractor<List<LinkDTO>> {
+        @Override
+        public List<LinkDTO> extractData(ResultSet rs) throws SQLException, DataAccessException {
+            Map<Integer, LinkDTO> linkMap = new LinkedHashMap<>();
+
+            while (rs.next()) {
+                int linkId = rs.getInt("id");
+                LinkDTO link = linkMap.computeIfAbsent(linkId, id -> {
+                    String url = null;
+                    LocalDateTime lastUpdated = null;
+                    LinkType type = null;
+                    List<String> filters = null;
+                    try {
+                        url = rs.getString("url");
+                        lastUpdated = rs.getTimestamp("last_updated_at").toLocalDateTime();
+                        type = LinkType.valueOf(rs.getString("type"));
+                        filters = Optional.ofNullable(rs.getString("filters"))
+                                .map(f -> Arrays.asList(f.split(",")))
+                                .orElse(Collections.emptyList());
+                    } catch (SQLException e) {
+                        log.error("Parsing to dto failed", e);
+                    }
+
+                    return new LinkDTO(id, url, new ArrayList<>(), filters, lastUpdated, new ArrayList<>(), type);
+                });
+                if (!rs.wasNull()) {
+                    long chatId = rs.getLong("chat_id");
+                    link.telegramChatIds().add(chatId);
+                }
+            }
+
+            return new ArrayList<>(linkMap.values());
         }
     }
 
@@ -150,11 +193,21 @@ public class LinkRepositoryJDBC implements LinkRepository {
     @Override
     @Transactional
     public List<LinkDTO> getPaginatedLinks(Integer offset, Integer limit) {
-        String sql = "SELECT * FROM links LIMIT :limit OFFSET :offset";
+        String sql = "SELECT " + "  l.id, "
+                + "  l.url, "
+                + "  l.filters, "
+                + "  l.last_updated_at, "
+                + "  l.type, "
+                + "  u.id               , "
+                + "  u.chat_id          "
+                + "FROM links l "
+                + "  LEFT JOIN user_link ul ON l.id = ul.link_id "
+                + "  LEFT JOIN users u     ON u.id = ul.user_id "
+                + "LIMIT :limit OFFSET :offset";
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("limit", limit);
         params.addValue("offset", offset);
-        return jdbcTemplate.query(sql, params, new Mapper());
+        return jdbcTemplate.query(sql, params, new LinkWithUsersExtractor());
     }
 
     private Long findUserIdByChatId(Long telegramChatId) {
