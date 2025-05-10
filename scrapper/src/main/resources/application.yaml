@@ -1,14 +1,47 @@
 app:
+  bot-api-url: "http://localhost:8080/api/v1"
+  github-api-url: "https://api.github.com"
+  stackoverflow-api-url: "https://api.stackexchange.com/2.3"
   github-token: ${GITHUB_TOKEN}
   stackoverflow:
     key: ${SO_TOKEN_KEY}
     access-token: ${SO_ACCESS_TOKEN}
   access-type: SQL
   batch-size: 100
-  message-transport: Kafka
+  message-transport: HTTP
   topics:
     updates: updates
     dlq: dead-letter-queue
+  response-timeout: 5s
+  connection-timeout: 3s
+  max-retries: 3
+  backoff: 1s
+  retry-status-codes:
+    - 500
+    - 502
+    - 503
+    - 504
+    - 429
+
+resilience4j:
+  ratelimiter:
+    configs:
+      default:
+        limitForPeriod: 5
+        limitRefreshPeriod: 1m
+        timeoutDuration: 0
+    instances:
+      publicApi:
+        baseConfig: default
+  circuitbreaker:
+    instances:
+      botClientCircuit:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 1
+        minimumNumberOfCalls: 1
+        failureRateThreshold: 100
+        permittedNumberOfCallsInHalfOpenState: 1
+        waitDurationInOpenState: 1s
 
 spring:
   application:
@@ -24,7 +57,7 @@ spring:
     username: nifreebie
     password: nis150905
   config:
-    import: optional:file:.env[.properties]
+    import: optional:file:D:\java-nifreebie\scrapper\.env[.properties]
   kafka:
     bootstrap-servers: localhost:9092
     producer:

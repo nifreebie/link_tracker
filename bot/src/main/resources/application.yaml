@@ -1,9 +1,40 @@
 app:
+  scrapper-api-url: http://localhost:8081/api/v1
   telegram-token: ${TELEGRAM_TOKEN}
   topics:
     updates: updates
     dlq: dead-letter-queue
   cache_ttl: 5
+  response-timeout: 5s
+  connection-timeout: 3s
+  max-retries: 3
+  backoff: 1s
+  retry-status-codes:
+    - 500
+    - 502
+    - 503
+    - 504
+    - 429
+
+resilience4j:
+  ratelimiter:
+    configs:
+      default:
+        limitForPeriod: 1
+        limitRefreshPeriod: 1m
+        timeoutDuration: 0
+    instances:
+      publicApi:
+        baseConfig: default
+  circuitbreaker:
+    instances:
+      scrapperClientCircuit:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 1
+        minimumNumberOfCalls: 1
+        failureRateThreshold: 100
+        permittedNumberOfCallsInHalfOpenState: 1
+        waitDurationInOpenState: 1s
 
 spring:
   application:
@@ -21,10 +52,6 @@ spring:
     consumer:
       group-id: bot-group
       auto-offset-reset: earliest
-  #      properties:
-  #        spring.json.trusted.packages: "backend.academy.bot.model.dto.request"
-  #        spring.json.value.default.type: "backend.academy.bot.model.dto.request.LinkUpdateRequest"
-  #        max.poll.records: 1
   data:
     redis:
       host: localhost
