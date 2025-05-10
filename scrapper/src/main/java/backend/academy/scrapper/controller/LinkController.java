@@ -11,6 +11,7 @@ import backend.academy.scrapper.model.dto.response.LinkResponse;
 import backend.academy.scrapper.model.dto.response.ListLinksResponse;
 import backend.academy.scrapper.openapi.src.main.java.com.baeldung.openapi.api.LinksApi;
 import backend.academy.scrapper.service.LinkService;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -37,6 +38,7 @@ public class LinkController implements LinksApi {
 
     @Override
     @GetMapping
+    @RateLimiter(name = "publicApi")
     public ResponseEntity<?> linksGet(@RequestHeader("Tg-Chat-Id") Long telegramChatId) {
         List<LinkResponse> response = linkService.getUserLinks(telegramChatId);
         return ResponseEntity.ok(new ListLinksResponse(response, response.size()));
@@ -44,6 +46,7 @@ public class LinkController implements LinksApi {
 
     @PostMapping
     @Override
+    @RateLimiter(name = "publicApi")
     public ResponseEntity<?> linksPost(
             @RequestHeader("Tg-Chat-Id") Long telegramChatId, @RequestBody AddLinkRequest request) {
         try {
@@ -64,6 +67,7 @@ public class LinkController implements LinksApi {
 
     @Override
     @DeleteMapping
+    @RateLimiter(name = "publicApi")
     public ResponseEntity<?> linksDelete(
             @RequestHeader("Tg-Chat-Id") Long telegramChatId, @RequestBody RemoveLinkRequest request) {
         try {
@@ -83,6 +87,7 @@ public class LinkController implements LinksApi {
     }
 
     @PostMapping("/tags")
+    @RateLimiter(name = "publicApi")
     public ResponseEntity<?> addTags(
             @RequestHeader("Tg-Chat-Id") Long telegramChatId, @RequestBody ChangeLinkTagsRequest request) {
         try {
@@ -112,6 +117,7 @@ public class LinkController implements LinksApi {
     }
 
     @DeleteMapping("/tags")
+    @RateLimiter(name = "publicApi")
     public ResponseEntity<?> removeTags(
             @RequestHeader("Tg-Chat-Id") Long telegramChatId, @RequestBody ChangeLinkTagsRequest request) {
         try {

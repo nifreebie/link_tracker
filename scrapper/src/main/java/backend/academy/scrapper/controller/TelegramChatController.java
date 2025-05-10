@@ -5,6 +5,7 @@ import backend.academy.scrapper.exceptions.NotFoundException;
 import backend.academy.scrapper.model.dto.response.ApiErrorResponse;
 import backend.academy.scrapper.openapi.src.main.java.com.baeldung.openapi.api.TgChatApi;
 import backend.academy.scrapper.service.TelegramChatService;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -31,6 +32,7 @@ public class TelegramChatController implements TgChatApi {
 
     @Override
     @PostMapping("/{id}")
+    @RateLimiter(name = "publicApi")
     public ResponseEntity<?> tgChatIdPost(@PathVariable Long id) {
         try {
             telegramChatService.register(id);
@@ -50,6 +52,7 @@ public class TelegramChatController implements TgChatApi {
 
     @Override
     @DeleteMapping("/{id}")
+    @RateLimiter(name = "publicApi")
     public ResponseEntity<?> tgChatIdDelete(@PathVariable Long id) {
         try {
             telegramChatService.delete(id);
@@ -68,6 +71,7 @@ public class TelegramChatController implements TgChatApi {
     }
 
     @GetMapping
+    @RateLimiter(name = "publicApi")
     public ResponseEntity<List<Long>> getAllUsers() {
         return ResponseEntity.ok(telegramChatService.getAllUsers());
     }

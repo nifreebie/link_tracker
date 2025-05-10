@@ -4,6 +4,7 @@ import backend.academy.bot.model.dto.request.LinkUpdateRequest;
 import backend.academy.bot.openapi.src.main.java.com.baeldung.openapi.api.UpdatesApi;
 import backend.academy.bot.service.UpdateService;
 import backend.academy.bot.util.BotMessages;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,6 +25,7 @@ public class UpdateController implements UpdatesApi, BotMessages {
 
     @Override
     @PostMapping("/updates")
+    @RateLimiter(name = "publicApi")
     public ResponseEntity<String> updatesPost(@RequestBody LinkUpdateRequest request) {
         updateService.sendUpdates(request);
         return ResponseEntity.ok(UPDATE_OK_RESPONSE);

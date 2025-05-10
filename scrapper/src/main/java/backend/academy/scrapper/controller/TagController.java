@@ -3,6 +3,7 @@ package backend.academy.scrapper.controller;
 import backend.academy.scrapper.exceptions.IsAlreadyRegisteredException;
 import backend.academy.scrapper.model.dto.response.ApiErrorResponse;
 import backend.academy.scrapper.service.impl.TagServiceImpl;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,7 @@ public class TagController {
     }
 
     @PostMapping
+    @RateLimiter(name = "publicApi")
     public ResponseEntity<?> create(@RequestHeader("Tg-Chat-Id") Long telegramChatId, @RequestBody String name) {
         try {
             return ResponseEntity.ok(tagService.create(name, telegramChatId));
@@ -44,6 +46,7 @@ public class TagController {
     }
 
     @GetMapping
+    @RateLimiter(name = "publicApi")
     public ResponseEntity<?> getUserTags(@RequestHeader("Tg-Chat-Id") Long telegramChatId) {
         return ResponseEntity.ok(tagService.getUserTags(telegramChatId));
     }
