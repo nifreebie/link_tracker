@@ -1,7 +1,6 @@
-package backend.academy.scrapper.configuration;
+package backend.academy.bot.configuration;
 
-import backend.academy.scrapper.ScrapperConfig;
-import backend.academy.scrapper.interceptor.AuthInterceptor;
+import backend.academy.bot.BotConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator;
 import io.netty.channel.ChannelOption;
@@ -11,7 +10,6 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,32 +17,20 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.http.client.PrematureCloseException;
 import reactor.util.retry.Retry;
 
 @Configuration
-@EnableScheduling
-public class WebConfiguration implements WebMvcConfigurer {
-    private final AuthInterceptor authInterceptor;
+public class WebConfiguration {
     private final CircuitBreaker botCircuit;
 
-    @Autowired
-    public WebConfiguration(AuthInterceptor authInterceptor, CircuitBreaker botCircuit) {
-        this.authInterceptor = authInterceptor;
+    public WebConfiguration(CircuitBreaker botCircuit) {
         this.botCircuit = botCircuit;
-    }
-
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(authInterceptor).addPathPatterns("/api/v1/links/**");
     }
 
     @Bean
@@ -54,7 +40,7 @@ public class WebConfiguration implements WebMvcConfigurer {
             @Value("${app.connection-timeout}") Duration connectionTimeout,
             @Value("${app.max-retries}") Integer maxRetries,
             @Value("${app.backoff}") Duration backoff,
-            ScrapperConfig config) {
+            BotConfig config) {
         ExchangeFilterFunction retryFilter = (request, next) -> next.exchange(request)
                 .flatMap(resp -> {
                     HttpStatusCode status = resp.statusCode();

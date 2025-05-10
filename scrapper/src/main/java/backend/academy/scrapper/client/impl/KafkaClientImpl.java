@@ -6,12 +6,10 @@ import backend.academy.scrapper.model.dto.EventDTO;
 import backend.academy.scrapper.model.dto.LinkDTO;
 import backend.academy.scrapper.model.dto.request.LinkUpdateRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConditionalOnProperty(name = "app.message-transport", havingValue = "Kafka")
 public class KafkaClientImpl implements BotClient {
     private final KafkaTemplate<String, LinkUpdateRequest> kafkaTemplate;
     private final ScrapperConfig scrapperConfig;

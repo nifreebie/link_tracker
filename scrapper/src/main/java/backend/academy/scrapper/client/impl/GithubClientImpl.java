@@ -9,6 +9,7 @@ import java.time.OffsetDateTime;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -21,16 +22,11 @@ public class GithubClientImpl implements GithubClient {
 
     private final ScrapperConfig config;
 
-    private static final String GITHUB_API_URL = "https://api.github.com";
-
     @Autowired
-    public GithubClientImpl(ScrapperConfig config) {
-        this(GITHUB_API_URL, config);
-    }
-
-    public GithubClientImpl(String url, ScrapperConfig config) {
+    public GithubClientImpl(
+            @Value("${app.github-api-url}") String url, ScrapperConfig config, WebClient.Builder webClientBuilder) {
         this.config = config;
-        this.webClient = WebClient.builder().baseUrl(url).build();
+        this.webClient = webClientBuilder.baseUrl(url).build();
     }
 
     @Override
@@ -52,12 +48,6 @@ public class GithubClientImpl implements GithubClient {
                     log.warn("Repo not found: {}/{}", owner, repo);
                     return response.bodyToMono(String.class)
                             .flatMap(errorBody -> Mono.error(new RuntimeException("Not found: " + errorBody)));
-                })
-                .onStatus(HttpStatus.INTERNAL_SERVER_ERROR::equals, response -> {
-                    log.error("Internal server error while fetching repo {}/{}", owner, repo);
-                    return response.bodyToMono(String.class)
-                            .flatMap(errorBody ->
-                                    Mono.error(new RuntimeException("Internal server error: " + errorBody)));
                 })
                 .bodyToFlux(Map.class)
                 .next()

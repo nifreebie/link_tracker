@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -23,16 +24,13 @@ public class StackOverFlowClientImpl implements StackOverFlowClient {
 
     private final ScrapperConfig config;
 
-    private static final String STACKOVERFLOW_API_URL = "https://api.stackexchange.com/2.3";
-
     @Autowired
-    public StackOverFlowClientImpl(ScrapperConfig config) {
-        this(STACKOVERFLOW_API_URL, config);
-    }
-
-    public StackOverFlowClientImpl(String url, ScrapperConfig config) {
+    public StackOverFlowClientImpl(
+            @Value("${app.stackoverflow-api-url}") String url,
+            ScrapperConfig config,
+            WebClient.Builder webClientBuilder) {
         this.config = config;
-        this.webClient = WebClient.builder().baseUrl(url).build();
+        this.webClient = webClientBuilder.baseUrl(url).build();
     }
 
     @Override

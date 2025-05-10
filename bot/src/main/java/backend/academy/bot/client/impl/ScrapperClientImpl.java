@@ -11,6 +11,7 @@ import backend.academy.bot.model.dto.response.LinkResponse;
 import backend.academy.bot.model.dto.response.ListLinksResponse;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -22,14 +23,8 @@ import reactor.core.publisher.Mono;
 public class ScrapperClientImpl implements ScrapperClient {
     private final WebClient webClient;
 
-    private static final String SCRAPPER_API_URL = "http://localhost:8081/api/v1";
-
-    public ScrapperClientImpl(String url) {
-        this.webClient = WebClient.builder().baseUrl(url).build();
-    }
-
-    public ScrapperClientImpl() {
-        this.webClient = WebClient.builder().baseUrl(SCRAPPER_API_URL).build();
+    public ScrapperClientImpl(@Value("${app.scrapper-api-url}") String url, WebClient.Builder webClientBuilder) {
+        this.webClient = webClientBuilder.baseUrl(url).build();
     }
 
     @Override
