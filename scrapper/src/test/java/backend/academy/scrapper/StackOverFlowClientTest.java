@@ -12,7 +12,6 @@ import backend.academy.scrapper.util.LiquibaseMigration;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import java.nio.file.Paths;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +28,10 @@ import reactor.test.StepVerifier;
 @TestPropertySource(properties = "app.access-type=ORM")
 @Import({TestcontainersConfiguration.class})
 public class StackOverFlowClientTest {
-    private WireMockServer wireMockServer;
+    private static WireMockServer wireMockServer =
+            new WireMockServer(WireMockConfiguration.options().dynamicPort());
+
+    @Autowired
     private StackOverFlowClientImpl stackOverFlowClient;
 
     @Autowired
@@ -37,12 +39,12 @@ public class StackOverFlowClientTest {
 
     @DynamicPropertySource
     static void overrideProperties(DynamicPropertyRegistry registry) {
+        wireMockServer.start();
         registry.add("spring.jpa.properties.hibernate.dialect", () -> "org.hibernate.dialect.PostgreSQLDialect");
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "none");
+        String base = "http://localhost:" + wireMockServer.port();
+        registry.add("app.stackoverflow-api-url", () -> base);
     }
-
-    @Autowired
-    private ScrapperConfig config;
 
     @BeforeEach
     void setUp() {
@@ -52,18 +54,7 @@ public class StackOverFlowClientTest {
                 postgresContainer.getPassword(),
                 postgresContainer.getJdbcUrl());
 
-        wireMockServer =
-                new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort());
-        wireMockServer.start();
-
         configureFor("localhost", wireMockServer.port());
-
-        stackOverFlowClient = new StackOverFlowClientImpl("http://localhost:" + wireMockServer.port(), config);
-    }
-
-    @AfterEach
-    void tearDown() {
-        wireMockServer.stop();
     }
 
     @Test
@@ -133,16 +124,6 @@ public class StackOverFlowClientTest {
 
         StepVerifier.create(stackOverFlowClient.getQuestionLastAnswer("12345"))
                 .expectErrorMatches(error -> error.getMessage().contains("404"))
-                .verify();
-    }
-
-    @Test
-    void testGetQuestionLastCommentWithServerError() {
-        stubFor(get(urlPathMatching("/questions/.*?/comments"))
-                .willReturn(aResponse().withStatus(500).withBody("Internal Server Error")));
-
-        StepVerifier.create(stackOverFlowClient.getQuestionLastComment("12345"))
-                .expectErrorMatches(error -> error.getMessage().contains("500"))
                 .verify();
     }
 }

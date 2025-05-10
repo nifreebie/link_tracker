@@ -8,32 +8,34 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import java.util.List;
 import java.util.Objects;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 @SpringBootTest(properties = {"app.telegram-token=token"})
 public class ScrapperClientTest {
-    private WireMockServer wireMockServer;
+    private static WireMockServer wireMockServer =
+            new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort());
+    ;
+
+    @Autowired
     private ScrapperClientImpl scrapperClient;
+
+    @DynamicPropertySource
+    static void overrideProperties(DynamicPropertyRegistry registry) {
+        wireMockServer.start();
+        String base = "http://localhost:" + wireMockServer.port();
+        registry.add("app.scrapper-api-url", () -> base);
+    }
 
     @BeforeEach
     void setUp() {
-        wireMockServer =
-                new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort());
-        wireMockServer.start();
-
         WireMock.configureFor("localhost", wireMockServer.port());
-
-        scrapperClient = new ScrapperClientImpl("http://localhost:" + wireMockServer.port());
-    }
-
-    @AfterEach
-    void tearDown() {
-        wireMockServer.stop();
     }
 
     @Test

@@ -5,7 +5,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-import backend.academy.scrapper.client.BotClient;
 import backend.academy.scrapper.client.impl.BotClientImpl;
 import backend.academy.scrapper.model.domain.EventType;
 import backend.academy.scrapper.model.domain.LinkType;
@@ -31,13 +30,15 @@ import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 @SpringBootTest
-@TestPropertySource(properties = {"app.access-type=ORM", "app.message-transport=Kafka"})
+@TestPropertySource(properties = {"app.access-type=ORM"})
 @Import({TestcontainersConfiguration.class})
 public class BotClientTest {
     private WireMockServer wireMockServer;
-    private BotClient botClient;
     private LinkDTO link;
     private EventDTO event;
+
+    @Autowired
+    private BotClientImpl botClient;
 
     @Autowired
     private PostgreSQLContainer<?> postgresContainer;
@@ -62,8 +63,6 @@ public class BotClientTest {
         wireMockServer.start();
 
         WireMock.configureFor("localhost", wireMockServer.port());
-
-        botClient = new BotClientImpl();
 
         link = new LinkDTO(
                 1,

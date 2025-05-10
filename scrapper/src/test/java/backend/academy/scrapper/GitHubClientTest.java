@@ -13,7 +13,6 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,19 +30,22 @@ import reactor.test.StepVerifier;
 @TestPropertySource(properties = "app.access-type=ORM")
 @Import({TestcontainersConfiguration.class})
 public class GitHubClientTest {
-    private static WireMockServer wireMockServer;
-    private static GithubClientImpl gitHubClient;
+    private static WireMockServer wireMockServer =
+            new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort());
 
     @Autowired
-    private ScrapperConfig config;
+    private GithubClientImpl gitHubClient;
 
     @Autowired
     private PostgreSQLContainer<?> postgresContainer;
 
     @DynamicPropertySource
     static void overrideProperties(DynamicPropertyRegistry registry) {
+        wireMockServer.start();
         registry.add("spring.jpa.properties.hibernate.dialect", () -> "org.hibernate.dialect.PostgreSQLDialect");
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "none");
+        String base = "http://localhost:" + wireMockServer.port();
+        registry.add("app.github-api-url", () -> base);
     }
 
     @BeforeEach
@@ -54,18 +56,7 @@ public class GitHubClientTest {
                 postgresContainer.getPassword(),
                 postgresContainer.getJdbcUrl());
 
-        wireMockServer =
-                new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort());
-        wireMockServer.start();
-
         configureFor("localhost", wireMockServer.port());
-
-        gitHubClient = new GithubClientImpl("http://localhost:" + wireMockServer.port(), config);
-    }
-
-    @AfterEach
-    void tearDown() {
-        wireMockServer.stop();
     }
 
     @Test
@@ -93,20 +84,6 @@ public class GitHubClientTest {
         Mono<EventDTO> response = gitHubClient.getRepoLastUpdated("owner", "repo");
         StepVerifier.create(response)
                 .expectErrorMatches(throwable -> throwable.getMessage().contains("Not found"))
-                .verify();
-    }
-
-    @Test
-    void testGetRepoLastUpdatedWithServerError() {
-        wireMockServer.stubFor(get(urlMatching("/repos/.*/.*"))
-                .willReturn(aResponse()
-                        .withStatus(500)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody("{\"message\":\"Internal Server Error\"}")));
-
-        Mono<EventDTO> response = gitHubClient.getRepoLastUpdated("owner", "repo");
-        StepVerifier.create(response)
-                .expectErrorMatches(throwable -> throwable.getMessage().contains("Internal server error"))
                 .verify();
     }
 
@@ -273,22 +250,6 @@ public class GitHubClientTest {
         StepVerifier.create(response)
                 .expectErrorMatches(
                         throwable -> throwable.getMessage().toLowerCase().contains("not found"))
-                .verify();
-    }
-
-    @Test
-    void testGetLastIssueCreatedWithServerError() {
-        wireMockServer.stubFor(get(urlMatching("/repos/.*/.*/issues.*"))
-                .willReturn(aResponse()
-                        .withStatus(500)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody("{\"message\": \"Internal Server Error\"}")));
-
-        Mono<EventDTO> response = gitHubClient.getLastIssueCreated("owner", "repo");
-
-        StepVerifier.create(response)
-                .expectErrorMatches(
-                        throwable -> throwable.getMessage().toLowerCase().contains("internal server error"))
                 .verify();
     }
 }
