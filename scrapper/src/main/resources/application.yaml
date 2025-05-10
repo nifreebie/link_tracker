@@ -8,7 +8,7 @@ app:
     access-token: ${SO_ACCESS_TOKEN}
   access-type: SQL
   batch-size: 100
-  message-transport: HTTP
+  message-transport: Kafka
   topics:
     updates: updates
     dlq: dead-letter-queue
