@@ -57,7 +57,7 @@ spring:
     username: nifreebie
     password: nis150905
   config:
-    import: optional:file:D:\java-nifreebie\scrapper\.env[.properties]
+    import: optional:file:.env[.properties]
   kafka:
     bootstrap-servers: localhost:9092
     producer:
