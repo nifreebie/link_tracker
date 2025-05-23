@@ -12,19 +12,23 @@ import backend.academy.scrapper.model.domain.LinkType;
 import backend.academy.scrapper.model.dto.EventDTO;
 import backend.academy.scrapper.model.dto.LinkDTO;
 import backend.academy.scrapper.model.dto.request.LinkUpdateRequest;
+import backend.academy.scrapper.util.LiquibaseMigration;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
+import org.testcontainers.containers.PostgreSQLContainer;
 import reactor.test.StepVerifier;
 
 @SpringBootTest(
@@ -35,6 +39,7 @@ import reactor.test.StepVerifier;
             "app.backoff=0ms",
             "app.message-transport=HTTP"
         })
+@Import({TestcontainersConfiguration.class})
 public class CircuitBreakerTest {
     private static WireMockServer wireMockServer =
             new WireMockServer(WireMockConfiguration.options().dynamicPort());
@@ -46,16 +51,26 @@ public class CircuitBreakerTest {
     @Autowired
     private BotClientImpl botClient;
 
+    @Autowired
+    private PostgreSQLContainer<?> postgresContainer;
+
     @DynamicPropertySource
     static void registerProps(DynamicPropertyRegistry registry) {
         wireMockServer.start();
         String base = "http://localhost:" + wireMockServer.port();
         registry.add("app.bot-api-url", () -> base + "/api/v1");
+        registry.add("spring.jpa.properties.hibernate.dialect", () -> "org.hibernate.dialect.PostgreSQLDialect");
+        registry.add("spring.jpa.hibernate.ddl-auto", () -> "none");
     }
 
     @BeforeEach
     @Transactional
     void setUp() {
+        LiquibaseMigration.migrate(
+                Paths.get("../migrations/master.xml"),
+                postgresContainer.getUsername(),
+                postgresContainer.getPassword(),
+                postgresContainer.getJdbcUrl());
 
         WireMock.configureFor("localhost", wireMockServer.port());
 

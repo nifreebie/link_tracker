@@ -14,16 +14,23 @@ import backend.academy.scrapper.model.domain.EventType;
 import backend.academy.scrapper.model.domain.LinkType;
 import backend.academy.scrapper.model.dto.EventDTO;
 import backend.academy.scrapper.model.dto.LinkDTO;
+import backend.academy.scrapper.util.LiquibaseMigration;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
+import org.testcontainers.containers.PostgreSQLContainer;
 
 @SpringBootTest
 @TestPropertySource(properties = "app.message-transport=Kafka")
+@Import({TestcontainersConfiguration.class})
 public class FallbackClientTest {
     private KafkaClientImpl kafkaClient;
     private BotClientImpl httpClient;
@@ -33,8 +40,23 @@ public class FallbackClientTest {
     @Autowired
     private ScrapperConfig config;
 
+    @Autowired
+    private PostgreSQLContainer<?> postgresContainer;
+
+    @DynamicPropertySource
+    static void registerProps(DynamicPropertyRegistry registry) {
+        registry.add("spring.jpa.properties.hibernate.dialect", () -> "org.hibernate.dialect.PostgreSQLDialect");
+        registry.add("spring.jpa.hibernate.ddl-auto", () -> "none");
+    }
+
     @BeforeEach
     void setUp() {
+        LiquibaseMigration.migrate(
+                Paths.get("../migrations/master.xml"),
+                postgresContainer.getUsername(),
+                postgresContainer.getPassword(),
+                postgresContainer.getJdbcUrl());
+
         kafkaClient = mock(KafkaClientImpl.class);
         httpClient = mock(BotClientImpl.class);
 
