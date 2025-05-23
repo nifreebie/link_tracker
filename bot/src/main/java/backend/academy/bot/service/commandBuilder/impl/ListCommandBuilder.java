@@ -1,6 +1,6 @@
 package backend.academy.bot.service.commandBuilder.impl;
 
-import backend.academy.bot.exceptions.UnavaliableCommandException;
+import backend.academy.bot.exceptions.UnavailableCommandException;
 import backend.academy.bot.exceptions.UnregisteredException;
 import backend.academy.bot.model.UserState;
 import backend.academy.bot.model.command.Command;
@@ -25,7 +25,7 @@ public class ListCommandBuilder extends CommandBuilder implements BotMessages {
             throw new UnregisteredException(REGISTRATION_NEED);
         }
         if (state != UserState.DEFAULT) {
-            throw new UnavaliableCommandException(COMMAND_NOT_ALLOWED);
+            throw new UnavailableCommandException(COMMAND_NOT_ALLOWED);
         }
         return new ListCommand(update.message().chat().id());
     }

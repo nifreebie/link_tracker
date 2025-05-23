@@ -6,7 +6,7 @@ import backend.academy.scrapper.repository.TagRepository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 
 @ConditionalOnProperty(name = "app.access-type", havingValue = "SQL")
 @Repository
+@RequiredArgsConstructor
 public class TagRepositoryJDBC implements TagRepository {
 
     private static class Mapper implements RowMapper<TagDTO> {
@@ -28,11 +29,6 @@ public class TagRepositoryJDBC implements TagRepository {
     }
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
-
-    @Autowired
-    public TagRepositoryJDBC(NamedParameterJdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     @Override
     public String createTag(String name, Long telegramChatId) {

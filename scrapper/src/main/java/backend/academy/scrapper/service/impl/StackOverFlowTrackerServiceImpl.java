@@ -5,18 +5,14 @@ import backend.academy.scrapper.model.dto.EventDTO;
 import backend.academy.scrapper.service.StackOverFlowTrackerService;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 @Service
+@RequiredArgsConstructor
 public class StackOverFlowTrackerServiceImpl implements StackOverFlowTrackerService {
     private final StackOverFlowClient stackOverFlowClient;
-
-    @Autowired
-    public StackOverFlowTrackerServiceImpl(StackOverFlowClient stackOverFlowClient) {
-        this.stackOverFlowClient = stackOverFlowClient;
-    }
 
     @Override
     public Mono<EventDTO> trackAnswers(String url) {

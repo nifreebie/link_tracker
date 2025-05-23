@@ -1,7 +1,7 @@
 package backend.academy.bot.configuration;
 
 import backend.academy.bot.exceptions.NoSuchCommandException;
-import backend.academy.bot.exceptions.UnavaliableCommandException;
+import backend.academy.bot.exceptions.UnavailableCommandException;
 import backend.academy.bot.exceptions.UnregisteredException;
 import backend.academy.bot.model.command.Command;
 import backend.academy.bot.service.CommandManager;
@@ -9,12 +9,16 @@ import backend.academy.bot.service.CommandParser;
 import backend.academy.bot.service.impl.StateMachineImpl;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.UpdatesListener;
+import com.pengrad.telegrambot.model.CallbackQuery;
+import com.pengrad.telegrambot.model.Message;
+import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
 import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class UpdatesListenerRegister {
 
     private final TelegramBot telegramBot;
@@ -25,52 +29,54 @@ public class UpdatesListenerRegister {
 
     private final StateMachineImpl stateMachine;
 
-    @Autowired
-    public UpdatesListenerRegister(
-            TelegramBot telegramBot,
-            CommandManager commandManager,
-            CommandParser commandParser,
-            StateMachineImpl stateMachine) {
-        this.telegramBot = telegramBot;
-        this.commandManager = commandManager;
-        this.commandParser = commandParser;
-        this.stateMachine = stateMachine;
-    }
-
     @PostConstruct
     public void register() {
         telegramBot.setUpdatesListener(updates -> {
-            updates.forEach(update -> {
-                Long chatId = null;
-                if (update.message() != null) {
-                    chatId = update.message().chat().id();
-                    if (update.message().text() != null) {
-                        if (update.message().text().startsWith("/")) {
-                            String text = update.message().text();
-                            try {
-                                Command command = commandParser.getCommand(text, update);
-                                if (command != null) {
-                                    telegramBot.execute(
-                                            new SendMessage(chatId, commandManager.executeCommand(command)));
-                                }
-                            } catch (NoSuchCommandException | UnregisteredException | UnavaliableCommandException e) {
-                                telegramBot.execute(new SendMessage(chatId, e.getMessage()));
-                            }
-                        } else {
-                            Command command = stateMachine.process(chatId, update);
-                            if (command != null) {
-                                telegramBot.execute(new SendMessage(chatId, commandManager.executeCommand(command)));
-                            }
-                        }
-                    }
-                } else if (update.callbackQuery() != null) {
-                    chatId = update.callbackQuery().message().chat().id();
-                    Command command = stateMachine.process(chatId, update);
-                    if (command != null) {
-                        telegramBot.execute(new SendMessage(chatId, commandManager.executeCommand(command)));
-                    }
+            for (Update update : updates) {
+                if (update.message() == null && update.callbackQuery() == null) {
+                    continue;
                 }
-            });
+
+                Long chatId;
+                if (update.message() != null) {
+                    Message msg = update.message();
+                    chatId = msg.chat().id();
+
+                    String text = msg.text();
+                    if (text == null) {
+                        continue;
+                    }
+
+                    if (text.startsWith("/")) {
+                        try {
+                            Command command = commandParser.getCommand(text, update);
+                            if (command != null) {
+                                String result = commandManager.executeCommand(command);
+                                telegramBot.execute(new SendMessage(chatId, result));
+                            }
+                        } catch (NoSuchCommandException | UnregisteredException | UnavailableCommandException e) {
+                            telegramBot.execute(new SendMessage(chatId, e.getMessage()));
+                        }
+                        continue;
+                    }
+
+                    Command stateCommand = stateMachine.process(chatId, update);
+                    if (stateCommand != null) {
+                        String result = commandManager.executeCommand(stateCommand);
+                        telegramBot.execute(new SendMessage(chatId, result));
+                    }
+                    continue;
+                }
+                CallbackQuery cq = update.callbackQuery();
+                chatId = cq.message().chat().id();
+
+                Command callbackCommand = stateMachine.process(chatId, update);
+                if (callbackCommand != null) {
+                    String result = commandManager.executeCommand(callbackCommand);
+                    telegramBot.execute(new SendMessage(chatId, result));
+                }
+            }
+
             return UpdatesListener.CONFIRMED_UPDATES_ALL;
         });
     }

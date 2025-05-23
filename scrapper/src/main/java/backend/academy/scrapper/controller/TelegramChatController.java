@@ -9,7 +9,7 @@ import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,14 +21,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/tg-chat")
+@RequiredArgsConstructor
 public class TelegramChatController implements TgChatApi {
 
     private final TelegramChatService telegramChatService;
-
-    @Autowired
-    public TelegramChatController(TelegramChatService telegramChatService) {
-        this.telegramChatService = telegramChatService;
-    }
 
     @Override
     @PostMapping("/{id}")

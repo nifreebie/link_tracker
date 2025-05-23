@@ -9,24 +9,20 @@ import backend.academy.scrapper.repository.TagRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 @ConditionalOnProperty(name = "app.access-type", havingValue = "ORM")
 @Repository
+@RequiredArgsConstructor
 public class TagRepositoryJpa implements TagRepository {
 
     @PersistenceContext
     private EntityManager entityManager;
 
     private final LinkRepository linkRepository;
-
-    @Autowired
-    public TagRepositoryJpa(LinkRepository linkRepository) {
-        this.linkRepository = linkRepository;
-    }
 
     @Transactional
     @Override

@@ -6,7 +6,7 @@ import backend.academy.scrapper.service.impl.TagServiceImpl;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,14 +18,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/tags")
+@RequiredArgsConstructor
 public class TagController {
 
     private final TagServiceImpl tagService;
-
-    @Autowired
-    public TagController(TagServiceImpl tagService) {
-        this.tagService = tagService;
-    }
 
     @PostMapping
     @RateLimiter(name = "publicApi")

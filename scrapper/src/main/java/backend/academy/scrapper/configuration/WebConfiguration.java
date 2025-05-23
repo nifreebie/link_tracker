@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,15 +32,10 @@ import reactor.util.retry.Retry;
 
 @Configuration
 @EnableScheduling
+@RequiredArgsConstructor
 public class WebConfiguration implements WebMvcConfigurer {
     private final AuthInterceptor authInterceptor;
     private final CircuitBreaker botCircuit;
-
-    @Autowired
-    public WebConfiguration(AuthInterceptor authInterceptor, CircuitBreaker botCircuit) {
-        this.authInterceptor = authInterceptor;
-        this.botCircuit = botCircuit;
-    }
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {

@@ -5,18 +5,14 @@ import backend.academy.scrapper.exceptions.NotFoundException;
 import backend.academy.scrapper.repository.TelegramChatRepository;
 import backend.academy.scrapper.service.TelegramChatService;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class TelegramChatServiceImpl implements TelegramChatService {
 
     private final TelegramChatRepository telegramChatRepository;
-
-    @Autowired
-    public TelegramChatServiceImpl(TelegramChatRepository telegramChatRepository) {
-        this.telegramChatRepository = telegramChatRepository;
-    }
 
     @Override
     public void register(Long id) {

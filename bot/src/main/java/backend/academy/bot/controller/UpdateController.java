@@ -5,7 +5,7 @@ import backend.academy.bot.openapi.src.main.java.com.baeldung.openapi.api.Update
 import backend.academy.bot.service.UpdateService;
 import backend.academy.bot.util.BotMessages;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,15 +13,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v1")
 public class UpdateController implements UpdatesApi, BotMessages {
 
     private final UpdateService updateService;
-
-    @Autowired
-    public UpdateController(UpdateService updateService) {
-        this.updateService = updateService;
-    }
 
     @Override
     @PostMapping("/updates")

@@ -5,18 +5,14 @@ import backend.academy.scrapper.model.dto.EventDTO;
 import backend.academy.scrapper.service.GithubTrackerService;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 @Service
+@RequiredArgsConstructor
 public class GitHubTrackerService implements GithubTrackerService {
     private final GithubClient githubClient;
-
-    @Autowired
-    public GitHubTrackerService(GithubClient githubClient) {
-        this.githubClient = githubClient;
-    }
 
     @Override
     public Mono<EventDTO> trackCommit(String url) {

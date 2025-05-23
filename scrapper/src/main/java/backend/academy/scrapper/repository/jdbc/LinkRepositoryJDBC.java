@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -32,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @ConditionalOnProperty(name = "app.access-type", havingValue = "SQL")
 @Repository
+@RequiredArgsConstructor
 @Slf4j
 public class LinkRepositoryJDBC implements LinkRepository {
 
@@ -85,11 +86,6 @@ public class LinkRepositoryJDBC implements LinkRepository {
     }
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
-
-    @Autowired
-    public LinkRepositoryJDBC(NamedParameterJdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     @Transactional
     @Override

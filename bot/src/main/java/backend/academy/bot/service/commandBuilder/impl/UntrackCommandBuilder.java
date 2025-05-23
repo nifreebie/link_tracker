@@ -1,6 +1,6 @@
 package backend.academy.bot.service.commandBuilder.impl;
 
-import backend.academy.bot.exceptions.UnavaliableCommandException;
+import backend.academy.bot.exceptions.UnavailableCommandException;
 import backend.academy.bot.exceptions.UnregisteredException;
 import backend.academy.bot.model.UserState;
 import backend.academy.bot.model.command.Command;
@@ -28,7 +28,7 @@ public class UntrackCommandBuilder extends CommandBuilder implements BotMessages
             throw new UnregisteredException(REGISTRATION_NEED);
         }
         if (state != UserState.DEFAULT) {
-            throw new UnavaliableCommandException(COMMAND_NOT_ALLOWED);
+            throw new UnavailableCommandException(COMMAND_NOT_ALLOWED);
         }
         stateRepository.setState(update.message().chat().id(), UserState.AWAITING_UNTRACK_URL);
         telegramBot.execute(new SendMessage(update.message().chat().id(), ENTER_LINK));

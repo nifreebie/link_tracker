@@ -5,13 +5,14 @@ import backend.academy.bot.repository.StateRepository;
 import jakarta.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.Map;
-import lombok.Setter;
+import java.util.concurrent.ConcurrentHashMap;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 @Repository
-@Setter
+@RequiredArgsConstructor
 public class StateRepositoryImpl implements StateRepository {
-    private Map<Long, UserState> usersStates;
+    private Map<Long, UserState> usersStates = new ConcurrentHashMap<>();
 
     @PostConstruct
     public void init() {
@@ -30,6 +31,10 @@ public class StateRepositoryImpl implements StateRepository {
 
     @Override
     public void initUserState(Map<Long, UserState> map) {
-        usersStates = map;
+        if (map == null) {
+            throw new IllegalArgumentException("Empty user states are not allow");
+        }
+        usersStates.clear();
+        usersStates.putAll(map);
     }
 }

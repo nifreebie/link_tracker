@@ -4,19 +4,15 @@ import backend.academy.bot.BotConfig;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.BotCommand;
 import com.pengrad.telegrambot.request.SetMyCommands;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@RequiredArgsConstructor
 public class BotConfiguration {
 
     private final BotConfig botConfig;
-
-    @Autowired
-    public BotConfiguration(BotConfig botConfig) {
-        this.botConfig = botConfig;
-    }
 
     @Bean
     public TelegramBot telegramBot() {

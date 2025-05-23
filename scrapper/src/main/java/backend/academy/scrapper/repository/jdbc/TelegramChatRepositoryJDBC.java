@@ -2,7 +2,7 @@ package backend.academy.scrapper.repository.jdbc;
 
 import backend.academy.scrapper.repository.TelegramChatRepository;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -11,14 +11,10 @@ import org.springframework.stereotype.Repository;
 
 @ConditionalOnProperty(name = "app.access-type", havingValue = "SQL")
 @Repository
+@RequiredArgsConstructor
 public class TelegramChatRepositoryJDBC implements TelegramChatRepository {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
-
-    @Autowired
-    public TelegramChatRepositoryJDBC(NamedParameterJdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     @Override
     public void saveChat(Long tgChatId) {

@@ -11,19 +11,14 @@ import backend.academy.scrapper.service.LinkService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class LinkServiceImpl implements LinkService {
     private final LinkRepository linkRepository;
     private final TagRepository tagRepository;
-
-    @Autowired
-    public LinkServiceImpl(LinkRepository linkRepository, TagRepository tagRepository) {
-        this.linkRepository = linkRepository;
-        this.tagRepository = tagRepository;
-    }
 
     @Override
     public LinkDTO follow(AddLinkRequest request, Long telegramChatId) {

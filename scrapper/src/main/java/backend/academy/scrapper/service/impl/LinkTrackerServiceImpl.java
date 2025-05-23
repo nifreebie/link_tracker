@@ -14,8 +14,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -24,6 +24,7 @@ import reactor.core.scheduler.Schedulers;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class LinkTrackerServiceImpl implements LinkTrackerService {
 
     private final LinkRepository linkRepository;
@@ -38,18 +39,6 @@ public class LinkTrackerServiceImpl implements LinkTrackerService {
 
     @Value("${app.batch-size}")
     private int batchSize;
-
-    @Autowired
-    public LinkTrackerServiceImpl(
-            LinkRepository linkRepository,
-            GitHubTrackerService gitHubTrackerService,
-            StackOverFlowTrackerService stackOverFlowTrackerService,
-            BotClient botClient) {
-        this.linkRepository = linkRepository;
-        this.gitHubTrackerService = gitHubTrackerService;
-        this.stackOverFlowTrackerService = stackOverFlowTrackerService;
-        this.botClient = botClient;
-    }
 
     @Scheduled(fixedRate = 10000)
     public void checkForUpdates() {

@@ -4,18 +4,14 @@ import backend.academy.scrapper.exceptions.IsAlreadyRegisteredException;
 import backend.academy.scrapper.repository.TagRepository;
 import backend.academy.scrapper.service.TagService;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class TagServiceImpl implements TagService {
 
     private final TagRepository tagRepositoryJpa;
-
-    @Autowired
-    public TagServiceImpl(TagRepository tagRepository) {
-        this.tagRepositoryJpa = tagRepository;
-    }
 
     @Override
     public String create(String tagName, Long telegramChatId) {
