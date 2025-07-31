@@ -46,7 +46,7 @@ spring:
       ddl-auto: validate
     open-in-view: false
   config:
-    import: optional:file:.env[.properties]
+    import: optional:file:D:\java-nifreebie\bot\.env[.properties]
   kafka:
     bootstrap-servers: localhost:9092
     consumer:
